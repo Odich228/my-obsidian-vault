@@ -1,4 +1,4 @@
-cd /etc/dhcp/dhcpd.conf - конфиг
+ /etc/dhcp/dhcpd.conf - конфиг
 
 ddns-update-style none;
 authoritative; - опциаонально
@@ -15,4 +15,12 @@ subnet (СЕТЬ) netmask (МАСКА) {
 }
 
 
-cd /etc/sys
+/etc/sysconfig/dhcpd - порт 
+
+ The following variables are recognized:
+
+DHCPDARGS="ens18" - вот здесь
+
+#Default value if chroot mode disabled.
+#CHROOT="-j / -lf /var/lib/dhcp/dhcpd/state/dhcpd.leases"
+

@@ -1,1 +1,9 @@
-cd
+ /etc/bind/local.conf - описывать зоны 
+ include "/etc/bind/rfc1912.conf";
+
+// Consider adding the 1918 zones here,
+// if they are not used in your organization.
+//      include "/etc/bind/rfc1918.conf";
+
+// Add other zones here
+zone (name)

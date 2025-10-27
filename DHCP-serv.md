@@ -1,4 +1,4 @@
-cd /etc/dhcp/dhcpd.conf
+cd /etc/dhcp/dhcpd.conf - конфиг
 
 ddns-update-style none;
 authoritative; - опциаонально
@@ -13,3 +13,6 @@ subnet (СЕТЬ) netmask (МАСКА) {
         default-lease-time 21600;
         max-lease-time 43200;
 }
+
+
+cd /etc/sys

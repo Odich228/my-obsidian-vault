@@ -26,6 +26,6 @@ samba-tool domain provision --realm=courses.alt --domain courses \
 --server-role=dc --use-rfc2307 (Тру способ)
 
 
-samba-tool domain provision --use-rfc2307 --interactive
+$ samba-tool domain provision --use-rfc2307 --interactive
 (Не тру способ)
 

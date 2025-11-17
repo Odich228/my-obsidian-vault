@@ -12,3 +12,11 @@
 	`exit`
 
 	ip route 0.0.0.0/0 <шлюз по умолчанию>
+
+Настройка GRE 
+
+`interface tunnel.0`
+	`ip address <адрес/маска>`
+	`ip mtu 1400`
+	`ip tunnel <адрес м1> <адрес м2> mode gre`
+	`exit`

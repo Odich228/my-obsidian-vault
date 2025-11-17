@@ -2,3 +2,5 @@
 [[BIND]]
 [[DHCP-serv]]
 [[SMB]] 
+[[ECORUTER]]
+[[SAMBA]]

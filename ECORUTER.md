@@ -9,3 +9,6 @@
 	`service -instance <номер>`
 	`encapsulation untagged`
 	`connect ip interface <интерфейс>`
+	`exit`
+
+	ip route 0.0.0.0/0 <шлюз по умолчанию>

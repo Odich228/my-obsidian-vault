@@ -5,7 +5,7 @@
 	`ip nat outside/inside` 
 	`exit`
 
-port <порт>
-	service -instance <номер>
-	encapsulation untagged
-	connect ip interface <>
+`port <порт>`
+	`service -instance <номер>`
+	`encapsulation untagged`
+	`connect ip interface <интерфейс>`

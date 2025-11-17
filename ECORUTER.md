@@ -7,4 +7,5 @@
 
 port <порт>
 	service -instance <номер>
-	encapsulation
+	encapsulation untagged
+	connect ip interface <>

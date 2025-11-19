@@ -20,3 +20,14 @@
 	`ip mtu 1400`
 	`ip tunnel <адрес м1> <адрес м2> mode gre`
 	`exit`
+
+Настройка OSPF 
+	`router ospf 1`
+		`router-id <ip роутера>`
+		`network <сеть> area 0`
+		`passive-interface default`
+		`no passive-interface tunnel.0`
+	
+	interface tunnel.0
+	 ip ospf message-digest-key 1 md5 P@ssw0rd
+	 ip ospf authentication message-digest

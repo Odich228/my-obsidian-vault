@@ -13,7 +13,7 @@
 
 	ip route 0.0.0.0/0 <шлюз по умолчанию>
 
-Настройка GRE 
+==Настройка GRE== 
 
 `interface tunnel.0`
 	`ip address <адрес/маска>`
@@ -21,7 +21,7 @@
 	`ip tunnel <адрес м1> <адрес м2> mode gre`
 	`exit`
 
-Настройка OSPF 
+==Настройка OSPF== 
 	`router ospf 1`
 		`router-id <ip роутера>`
 		`network <сеть> area 0`
@@ -31,3 +31,15 @@
 	interface tunnel.0
 	 ip ospf message-digest-key 1 md5 P@ssw0rd
 	 ip ospf authentication message-digest
+
+VLAN
+`interface <name interface>`
+	`ip adddress <ip address>`
+	 `description <name vlan>`
+	 `no shutdown`
+	 `exit`
+`port <name port>`
+	`service-instance <name service>`
+		`encapsulation <tagged/untagged>`
+		`rewrite pop 1` 
+		`connect ip interface <name interface>`

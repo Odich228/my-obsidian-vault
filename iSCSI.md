@@ -47,4 +47,14 @@ iscsiadm -m discovery -t sendtargets -p 192.168.20.2
 iscsiadm -m node --login
 ```
 
-в файле /etc/iscsi
+в файле /etc/iscsi/iscsid.conf:
+- закомментировать **node.startup = manual**
+- раскомментировать **node.startup = automatic**
+
+В файле **/var/lib/iscsi/send_targets/<TargetServer>,<Port>/st_config** внести изменения:
+
+discovery.sendtargets.use_discoveryd = Yes
+
+Затем:
+reboot
+после этого диск должен появится 

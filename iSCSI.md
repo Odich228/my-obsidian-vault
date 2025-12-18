@@ -21,3 +21,30 @@ tgtadm --lld iscsi --op show --mode target
 
 filter = [ "rl/dev/sdl" ]
 
+srv1-cod
+- Установим пакет **open-iscsi**:
+
+```
+apt-get update && apt-get install -y open-iscsi
+```
+
+- Включаем и добавляем в автозагрузку службу **iscsid**:
+
+```
+systemctl enable --now iscsid
+```
+
+- Посмотреть доступные для подключения target-ы можно с помощью команды:
+
+```
+iscsiadm -m discovery -t sendtargets -p 192.168.20.2
+```
+
+- Подключить target-ы:
+    
+
+```
+iscsiadm -m node --login
+```
+
+в файле /etc/iscsi

@@ -17,4 +17,7 @@ tgtadm --lld iscsi --op show --mode target
 
 
 
-Указываем что бы LVM не сканил ISCSI диски в /etc/lvm/lvm.conf
+Указываем что бы LVM не сканил ISCSI диски в /etc/lvm/lvm.conf:
+
+filter = [ "rl/dev/sdl" ]
+

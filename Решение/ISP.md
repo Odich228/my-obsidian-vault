@@ -1,2 +1,0 @@
-[[ecorouter-cod]]
-[[ecorouter-a]]

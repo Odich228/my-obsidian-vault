@@ -1,10 +1,9 @@
 vim /etc/net/ifaces/enp7s1/options
-vim /etc/net/ifaces/enp7s1/ipv4address
-	10.2.10.2/24
-vim /etc/net/ifaces/enp7s1/ipv4route
-	default via 10.2.10.1
-vim /etc/net/ifaces/enp7s1/resolv.conf
-	nameserver 77.88.8.8
+echo "10.2.10.2/24" > /etc/net/ifaces/enp7s1/ipv4address
+echo "default via 10.2.10.1" > /etc/net/ifaces/enp7s1/ipv4route
+echo "nameserver 77.88.8.8" > /etc/net/ifaces/enp7s1/resovl.conf
+apt-get update && apt-get install -y task-samba-dc bind bind-utils
+
 ```
 control bind-chroot disabled
 ```

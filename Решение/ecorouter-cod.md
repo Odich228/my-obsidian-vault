@@ -25,7 +25,7 @@ exit
 interface tunnel.0
 ip address 10.10.10.1/30
 ip tunnel 178.207.179.4 178.207.179.28 mode gre
-ip ospf authenticatioexn message-digest 
+ip ospf authentication message-digest 
 ip ospf message-digest-key 1 md5 P@ssw0rd
 exit
 router ospf 1
@@ -52,3 +52,5 @@ Ip nat source dynamic inside-to-outside pool vl200 overload interface wan
 Ip nat source dynamic inside-to-outside pool vl300 overload interface wan
 Ip nat source dynamic inside-to-outside pool vl400 overload interface wan
 Ip nat source dynamic inside-to-outside pool vl500 overload interface wan
+exit 
+write memory

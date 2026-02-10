@@ -30,4 +30,4 @@ modprobe 8021q
 echo "8021q" | tee -a /etc/modules
 ovs-vsctl set port mgmt vlan_mode=native-untagged
 
-systemctl restart network
+roo

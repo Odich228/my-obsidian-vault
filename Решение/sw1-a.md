@@ -1,4 +1,4 @@
-systevim /etc/net/ifaces/enp7s1/options
+vim /etc/net/ifaces/enp7s1/options
 mkdir /etc/net/ifaces/mgmt
 vim /etc/net/ifaces/mgmt/options
 	TYPE=ovsport

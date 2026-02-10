@@ -19,7 +19,7 @@ echo 'include "/var/lib/samba/bind-dns/named.conf";' >> /etc/bind/named.conf
 vim /etc/bind/options.conf
 	tkey-gssapi-keytab "/var/lib/samba/bind-dns/dns.keytab";
 	minimal-responses yes;
-	category lame-server { null; };
+	category lame-servers { null; };
 
 ```
 rm -f /etc/samba/smb.conf

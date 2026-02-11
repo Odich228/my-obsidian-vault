@@ -1,5 +1,5 @@
-vim /etc/net/ifaces/ enp7s1/options
+hostname cli2-a.office.ssa2026.region
 
 ```
-apt-get install -y admc gpupdate gpui
+apt-get install -y task-auth-ad-sssd admc gpupdate gpui
  ```

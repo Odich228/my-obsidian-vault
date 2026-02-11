@@ -1,4 +1,4 @@
-vim /etc/net/ifaces/enp7s1/options
+catevim /etc/net/ifaces/enp7s1/options
 hostname dc-a.office.ssa2026.region; exec bash
 echo "10.2.10.2/24" > /etc/net/ifaces/enp7s1/ipv4address
 echo "default via 10.2.10.1" > /etc/net/ifaces/enp7s1/ipv4route

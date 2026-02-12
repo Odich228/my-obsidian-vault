@@ -1,4 +1,4 @@
-vim /etc/net/ifaces/enp7s1/options
+sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options 
 
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s2
 
@@ -6,7 +6,7 @@ vim /etc/net/ifaces/enp7s1/ipv4address
 	10.1.10.2/24
 vim/etc/net/ifaces/enp7s1/ipv4route
 	default via 10.1.10.1
-vim /etc/net/ifaces/enp7s2/ipv4address
+echo "10.1.20.3/24" > /etc/net/ifaces/enp7s2/ipv4address
 	10.1.20.3/24
 vim/etc/net/ifaces/enp7s1/ipv4route
 	default via 10.1.20.1
@@ -28,12 +28,6 @@ chown root:named /etc/bind/zone/cod.ssa2026.region
 vim /etc/bind/zone/cod.ssa2026.region
 	$TTL    1D
 	@       IN      SOA     cod.ssa2026.region. root.cod.ssa2026.region. (
-	                                2025110500      ; serial
-	                                12H             ; refresh
-	                                1H              ; retry
-	                                1W              ; expire
-	                                1H              ; ncache
-	                        )
 	                IN      NS      cod.ssa2026.region.
 	                IN      A       10.1.10.2
 	rtr-cod         IN      A       192.168.1.1
@@ -50,14 +44,6 @@ vim /etc/bind/zone/cod.ssa2026.region
 cp /etc/bind/zone/localhost /etc/bind/zone/1.10in-addr.arpa
 chown root:named /etc/bind/zone/1.10.in-addr.arpa
 vim/etc/bind/zone/1.10.in-addr.arpa
-	$TTL    1D
-	@       IN      SOA     cod.ssa2026.region. root.cod.ssa2026.region. (
-	                                2025110500      ; serial
-	                                12H             ; refresh
-	                                1H              ; retry
-	                                1W              ; expire
-	                                1H              ; ncache
-	                        )
 	                IN      NS      cod.ssa2026.region.
 	1.10            IN      PTR     fw-cod.cod.ssa2026.region.
 	2.10            IN      PTR     srv1-cod.cod.ssa2026.region.

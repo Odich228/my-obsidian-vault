@@ -41,6 +41,31 @@ service-instance fw-cod
 encapsulation untagged 
 connect ip interface fw-cod 
 exit
+service-instance vl100
+encapsulation dot1q 100
+rewrite pop 1
+connect ip interface vl100 
+exit
+service-instance vl200
+encapsulation dot1q 200
+rewrite pop 1
+connect ip interface vl200 
+exit
+service-instance vl300
+encapsulation dot1q 300
+rewrite pop 1
+connect ip interface vl300 
+exit
+service-instance vl400
+encapsulation dot1q 400
+rewrite pop 1
+connect ip interface vl400 
+exit
+service-instance vl500
+encapsulation dot1q 500
+rewrite pop 1
+connect ip interface vl500 
+exit
 exit
 interface tunnel.0
 ip address 10.10.10.1/30
@@ -56,7 +81,7 @@ network 10.10.10.0/30 area 0
 network 192.168.1.0/24 area 0
 exit
 security none
-aaa radius-server 10.1.10.1 port 1812 secret P@ssw0rd auth
+aaa radius-server 10.1.10.2 port 1812 secret P@ssw0rd auth
 aaa precedence local radius
 router bgp 64500
 bgp router-id 178.207.179.4

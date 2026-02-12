@@ -10,6 +10,26 @@ interface fw-cod
 ip address 192.168.1.1/24
 ip nat inside 
 exit 
+interface vl100 
+ip address 10.1.10.1/24
+ip nat inside
+exit
+interface vl200 
+ip address 10.1.20.1/24
+ip nat inside
+exit
+interface vl300 
+ip address 10.1.30.1/24
+ip nat inside
+exit
+interface vl400 
+ip address 10.1.40.1/24
+ip nat inside
+exit
+interface vl500 
+ip address 10.1.50.1/24
+ip nat inside
+exit
 port te0
 service-instance wan
 encapsulation untagged 

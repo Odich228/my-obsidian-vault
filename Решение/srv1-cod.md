@@ -1,7 +1,7 @@
 sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options 
 
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s2
-
+dawd
 echo "10.1.10.2/24" >  /etc/net/ifaces/enp7s1/ipv4address
 echo "default via 10.1.10.1" > /etc/net/ifaces/enp7s1/ipv4route
 echo "10.1.20.3/24" > /etc/net/ifaces/enp7s2/ipv4address

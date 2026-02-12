@@ -6,10 +6,15 @@ echo "10.1.10.2/24" >  /etc/net/ifaces/enp7s1/ipv4address
 echo "default via 10.1.10.1" > /etc/net/ifaces/enp7s1/ipv4route
 echo "10.1.20.3/24" > /etc/net/ifaces/enp7s2/ipv4address
 echo "default via 10.1.20.1" > /etc/net/ifaces/enp7s2/ipv4route
-echo "nameserver 77.88.8.8" > /etc/net/enp7s1/resolv.conf
+echo "nameserver 77.88.8.8" > /etc/net/ifaces/enp7s1/resolv.conf
 
 hostnamectl set-hostname srv1-cod.cod.ssa2026.region; exec bash
-vim /etc/bind/options.conf 
+обновляем систему, скачиваем радиус(freeradius freeradius-utils) и бинд(bind bind-utils)
+
+**Радиус**
+
+
+меняем параметры для бинда 
 	listen-on { any; };
     isten-on-v6 { none; };
     forward first;

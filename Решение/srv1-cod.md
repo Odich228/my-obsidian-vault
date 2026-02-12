@@ -2,14 +2,11 @@ sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options
 
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s2
 
-vim /etc/net/ifaces/enp7s1/ipv4address
-	10.1.10.2/24
-vim/etc/net/ifaces/enp7s1/ipv4route
-	default via 10.1.10.1
+echo "10.1.10.2/24" >  /etc/net/ifaces/enp7s1/ipv4address
+echo "default via 10.1.10.1" > /etc/net/ifaces/enp7s1/ipv4route
 echo "10.1.20.3/24" > /etc/net/ifaces/enp7s2/ipv4address
-	10.1.20.3/24
-vim/etc/net/ifaces/enp7s1/ipv4route
-	default via 10.1.20.1
+echo "default via 10.1.20.1" > /etc/net/ifaces/enp7s2/ipv4route
+echo "nameserver 77.88.8.8" > /etc/net/enp7s1/resolv.conf
 
 hostnamectl set-hostname srv1-cod.cod.ssa2026.region; exec bash
 vim /etc/bind/options.conf 

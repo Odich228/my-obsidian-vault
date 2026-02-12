@@ -28,6 +28,6 @@ ovs-vsctl add-bond sw1-cod bond0 enp7s2 enp7s3 bond_mode=active-backup
 ovs-vsctl set port bond0 trunk=100,200,300,400,500
 ovs-appctl bond/show
 echo "10.1.30.2/24" > /etc/net/ifaces/mgmt/ipv4address
-echo "default via 10.1.30.1/24" > /etc/net/ifaces/mgmt/ipv4route
+echo "default via 10.1.30.1" > /etc/net/ifaces/mgmt/ipv4route
 systemctl restart network
 ovs-vsctl set port mgmt vlan_mode=native-untagged

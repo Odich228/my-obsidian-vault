@@ -1,11 +1,13 @@
-vim /etc/net/ifaces/enp7s1/options
+sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options
 mkdir /etc/net/ifaces/mgmt
-vim /etc/net/ifaces/mgmt/options
-	TYPE=ovsport
-	BOOTPROTO=static
-	CONFIG_IPV4=yes
-	BRIDGE=sw1-a
-	VID=300
+touch /etc/net/ifaces/mgmt/options
+bash -c 'cat <<EOF > /etc/net/ifaces/mgmt/options 
+TYPE=ovsport 
+BOOTPROTO=static 
+CONFIG_IPV4=yes 
+BRIDGE=sw2-cod 
+VID=300 
+EOF'
 
 hostnamectl set-hostname sw1-a.office.ssa2026.region; exec bash
 systemctl enable --now openvswitch

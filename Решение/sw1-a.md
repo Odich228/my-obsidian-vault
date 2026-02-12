@@ -5,7 +5,7 @@ bash -c 'cat <<EOF > /etc/net/ifaces/mgmt/options
 TYPE=ovsport 
 BOOTPROTO=static 
 CONFIG_IPV4=yes 
-BRIDGE=sw2-cod 
+BRIDGE=sw1-a 
 VID=300 
 EOF'
 

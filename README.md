@@ -1,6 +1,2 @@
 # my-vlaute-obsidian
-[[BIND]]
-[[DHCP-serv]]
-[[SMB]] 
-[[ECORUTER]]
-[[SAMBA]]
+я вас наебл, идите нахуй

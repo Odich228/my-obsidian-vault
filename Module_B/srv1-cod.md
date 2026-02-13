@@ -22,7 +22,7 @@ hostnamectl set-hostname srv1-cod.cod.ssa2026.region; exec bash
     allow-query-cache { any; };
     allow-recursion { any; };
 
-vim /etc/bind//local.conf
+vim /etc/bind/local.conf
 
 cp /etc/bind/zone/localhost /etc/bind/zone/cod.ssa2026.region
 chown root:named /etc/bind/zone/cod.ssa2026.region

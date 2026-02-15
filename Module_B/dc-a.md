@@ -45,6 +45,10 @@ samba-tool domain provision
 ```
 
 ```
+cp /var/lib/samba/private/krb5.conf /etc/krb5.conf
+```
+
+```
 samba-tool dns add 127.0.0.1 office.ssa2026.region rtr-a A 10.2.10.1 -U administrator
 samba-tool dns add 127.0.0.1 office.ssa2026.region rtr-a A 10.2.20.1 -U administrator
 samba-tool dns add 127.0.0.1 office.ssa2026.region rtr-a A 10.2.30.1 -U administrator

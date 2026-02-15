@@ -9,7 +9,12 @@ exit
 interface fw-cod
 ip address 192.168.1.1/24
 ip nat inside 
-exit 
+exit
+port te0
+service-instance wan
+encapsulation untagged 
+connect ip interface wan
+exit
 port te1
 service-instance fw-cod
 encapsulation untagged 

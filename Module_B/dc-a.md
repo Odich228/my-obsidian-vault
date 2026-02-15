@@ -1,8 +1,9 @@
-vim /etc/net/ifaces/enp7s1/options
+sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options
 hostname dc-a.office.ssa2026.region; exec bash
 echo "10.2.10.2/24" > /etc/net/ifaces/enp7s1/ipv4address
 echo "default via 10.2.10.1" > /etc/net/ifaces/enp7s1/ipv4route
 echo "nameserver 77.88.8.8" > /etc/net/ifaces/enp7s1/resolv.conf
+systemctl restart network
 apt-get update && apt-get install -y task-samba-dc bind bind-utils
 
 ```

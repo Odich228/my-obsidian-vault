@@ -15,7 +15,6 @@ service-instance fw-cod
 encapsulation untagged 
 connect ip interface fw-cod 
 exit
-
 exit
 interface tunnel.0
 ip address 10.10.10.1/30

@@ -1,13 +1,13 @@
 sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options
 mkdir /etc/net/ifaces/mgmt
 touch /etc/net/ifaces/mgmt/options
-bash -c 'cat <<EOF > /etc/net/ifaces/mgmt/options 
+bash -c cat <<EOF > /etc/net/ifaces/mgmt/options 
 TYPE=ovsport 
 BOOTPROTO=static 
 CONFIG_IPV4=yes 
 BRIDGE=sw2-a 
 VID=300 
-EOF'
+EOF
 
 hostnamectl set-hostname sw2-a.office.ssa2026.region; exec bash
 systemctl enable --now openvswitch

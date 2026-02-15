@@ -10,62 +10,12 @@ interface fw-cod
 ip address 192.168.1.1/24
 ip nat inside 
 exit 
-interface vl100 
-ip address 10.1.10.1/24
-ip nat inside
-exit
-interface vl200 
-ip address 10.1.20.1/24
-ip nat inside
-exit
-interface vl300 
-ip address 10.1.30.1/24
-ip nat inside
-exit
-interface vl400 
-ip address 10.1.40.1/24
-ip nat inside
-exit
-interface vl500 
-ip address 10.1.50.1/24
-ip nat inside
-exit
-port te0
-service-instance wan
-encapsulation untagged 
-connect ip interface wan
-exit
-exit
 port te1
 service-instance fw-cod
 encapsulation untagged 
 connect ip interface fw-cod 
 exit
-service-instance vl100
-encapsulation dot1q 100
-rewrite pop 1
-connect ip interface vl100 
-exit
-service-instance vl200
-encapsulation dot1q 200
-rewrite pop 1
-connect ip interface vl200 
-exit
-service-instance vl300
-encapsulation dot1q 300
-rewrite pop 1
-connect ip interface vl300 
-exit
-service-instance vl400
-encapsulation dot1q 400
-rewrite pop 1
-connect ip interface vl400 
-exit
-service-instance vl500
-encapsulation dot1q 500
-rewrite pop 1
-connect ip interface vl500 
-exit
+
 exit
 interface tunnel.0
 ip address 10.10.10.1/30

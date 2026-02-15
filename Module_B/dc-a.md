@@ -1,5 +1,6 @@
 sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options
 hostname dc-a.office.ssa2026.region; exec bash
+domainname office.ssa2026.region
 echo "10.2.10.2/24" > /etc/net/ifaces/enp7s1/ipv4address
 echo "default via 10.2.10.1" > /etc/net/ifaces/enp7s1/ipv4route
 echo "nameserver 77.88.8.8" > /etc/net/ifaces/enp7s1/resolv.conf

@@ -21,6 +21,29 @@ domainname cod.ssa2026.region
 
 **Радиус**
 
+systemctl enable --now radiusd
+
+vim /etc/raddb/clients.conf
+
+	client ALL {
+	
+		ipadd = 0.0.0.0
+		
+		netmask = 0 
+		
+		secret = P@ssw0rd
+	}
+	
+vim /etc/raddb/users 
+
+	netuser Cleartext-Password := "P@ssw0rd"
+	
+		Service-Type = Administrative-User,
+		
+		Cisco-AVPair = "shell:roles=admin"
+		
+systemctl restart radiusd
+
 
 меняем параметры для бинда 
 	listen-on { any; };

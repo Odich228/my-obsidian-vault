@@ -38,4 +38,25 @@ echo "8021q" | tee -a /etc/modules
 
 ovs-vsctl set port mgmt vlan_mode=native-untagged
 
-roo
+radius:
+
+/etc/pam_radius_auth.conf
+
+10.1.10.2 (Tab) P@ssw0rd (Tab) 10
+
+/etc/pam.d/sshd
+
+(второй строкой)
+
+auth (Tab) sufficient (Tab) pam_radius_auth.so
+
+/etc/pam.d/system-auth-local
+
+(первой строкой)
+
+auth (Tab) sufficient (Tab) pam_radius_auth.so
+
+(пользак)
+
+useradd netuser
+passwd netuser (P@ssw0rd)

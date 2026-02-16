@@ -32,3 +32,21 @@ echo "10.1.30.2/24" > /etc/net/ifaces/mgmt/ipv4address
 echo "default via 10.1.30.1" > /etc/net/ifaces/mgmt/ipv4route
 systemctl restart network
 ovs-vsctl set port mgmt vlan_mode=native-untagged
+
+radius:
+
+/etc/pam_radius_auth.conf
+
+10.1.10.2 (Tab) P@ssw0rd (Tab) 10
+
+/etc/pam.d/sshd
+
+(второй строкой)
+
+auth (Tab) sufficient (Tab) pam_radius_auth.so
+
+/etc/pam.d/system-auth-local
+
+(первой строкой)
+
+auth (Tab) sufficient (Tab) pam_radius_auth.so

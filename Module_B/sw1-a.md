@@ -10,6 +10,7 @@ VID=300
 EOF
 
 hostnamectl set-hostname sw1-a.office.ssa2026.region; exec bash
+domainname office.ssa2026.region
 systemctl enable --now openvswitch
 sed -i "s/OVS_REMOVE=yes/OVS_REMOVE=no/g" /etc/net/ifaces/default/options
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s2

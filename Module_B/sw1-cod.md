@@ -1,15 +1,16 @@
 sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options 
 mkdir /etc/net/ifaces/mgmt
 touch /etc/net/ifaces/mgmt/options
-bash -c 'cat <<EOF > /etc/net/ifaces/mgmt/options 
+bash -c cat <<EOF > /etc/net/ifaces/mgmt/options 
 TYPE=ovsport 
 BOOTPROTO=static 
 CONFIG_IPV4=yes 
 BRIDGE=sw1-cod 
 VID=300 
-EOF'
+EOF
 
 hostnamectl set-hostname sw1-cod.office.ssa2026.region; exec bash
+domainname cd.ssa2026.region
 systemctl enable --now openvswitch
 sed -i "s/OVS_REMOVE=yes/OVS_REMOVE=no/g" /etc/net/ifaces/default/options
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s2

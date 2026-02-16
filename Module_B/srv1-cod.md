@@ -76,7 +76,7 @@ vim /etc/bind/zone/cod.ssa2026.region
 	admin-cod       IN      A       10.1.30.4
 	monitoring      IN      CNAME   srv1-cod.cod.ssa2026.region.
 
-cp /etc/bind/zone/localhost /etc/bind/zone/1.10in-addr.arpa
+cp /etc/bind/zone/localhost /etc/bind/zone/1.10.in-addr.arpa
 
 chown root:named /etc/bind/zone/1.10.in-addr.arpa
 

@@ -24,6 +24,7 @@ systemctl restart network
 
 
 hostnamectl set-hostname sw2-cod.office.ssa2026.region; exec bash
+domainname cod.ssa2026.region
 systemctl enable --now openvswitch
 sed -i "s/OVS_REMOVE=yes/OVS_REMOVE=no/g" /etc/net/ifaces/default/options
 ovs-vsctl add-br sw2-cod 

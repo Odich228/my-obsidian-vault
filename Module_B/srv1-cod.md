@@ -15,6 +15,8 @@ echo "nameserver 77.88.8.8" > /etc/net/ifaces/enp7s1/resolv.conf
 
 hostnamectl set-hostname srv1-cod.cod.ssa2026.region; exec bash
 
+domainname cod.ssa2026.region
+
 обновляем систему, скачиваем радиус(freeradius freeradius-utils) и бинд(bind bind-utils)
 
 **Радиус**

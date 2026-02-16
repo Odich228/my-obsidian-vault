@@ -54,3 +54,22 @@ samba-tool dns add 127.0.0.1 office.ssa2026.region rtr-a A 10.2.20.1 -U administ
 samba-tool dns add 127.0.0.1 office.ssa2026.region rtr-a A 10.2.30.1 -U administrator
 samba-tool dns add 127.0.0.1 office.ssa2026.region sw1-a A 10.2.30.2 -U administrator
 samba-tool dns add 127.0.0.1 office.ssa2026.region sw2-a A 10.2.30.3 -U administrator
+
+
+zone "2.10.in-addr.arpa" {
+        type master;
+        file "2.10.in-addr.arpa";
+        allow-transfer { 10.1.10.2; };
+};
+
+zone "cod.ssa2026.region" {
+        type forward;
+        forward only;
+        forwarders { 10.1.10.2; };
+};
+
+zone "1.10.in-addr.arpa" {
+        type forward;
+        forward only;
+        forwarders {100.100.100.100; };
+};

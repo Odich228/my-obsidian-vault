@@ -1,7 +1,6 @@
 
 sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options
-
-
+mkdir /etc/net/ifaces/mgmt
 touch /etc/net/ifaces/mgmt/options
 bash -c 'cat <<EOF > /etc/net/ifaces/mgmt/options 
 TYPE=ovsport 

@@ -60,3 +60,5 @@ auth (Tab) sufficient (Tab) pam_radius_auth.so
 
 useradd netuser
 passwd netuser (P@ssw0rd)
+
+systemctl restart sshd

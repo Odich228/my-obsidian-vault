@@ -50,3 +50,5 @@ auth (Tab) sufficient (Tab) pam_radius_auth.so
 (первой строкой)
 
 auth (Tab) sufficient (Tab) pam_radius_auth.so
+
+systemctl restart sshd

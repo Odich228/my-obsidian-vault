@@ -27,6 +27,11 @@ ip tunnel 178.207.179.4 178.207.179.28 mode gre
 ip ospf authentication message-digest 
 ip ospf message-digest-key 1 md5 P@ssw0rd
 exit
+ip route 10.1.10.0/24 192.168.1.2
+ip route 10.1.20.0/24 192.168.1.2
+ip route 10.1.30.0/24 192.168.1.2
+ip route 10.1.40.0/24 192.168.1.2
+ip route 10.1.50.0/24 192.168.1.2
 router ospf 1
 router-id 10.10.10.1
 passive-interface default

@@ -56,5 +56,5 @@ systemctl restart sshd
 
 cat <<EOF > /etc/net/ifaces/mgmt/resolv.conf
   search cod.ssa2026.region
-  nameserver 192.168.10.1
+  nameserver 10.1.10.2
 EOF

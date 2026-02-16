@@ -32,3 +32,9 @@ systemctl restart network
 ovs-vsctl set port mgmt vlan_mode=native-untagged
 modprobe 8021q
 echo "8021q" | tee -a /etc/modules
+
+
+cat <<EOF > /etc/net/ifaces/mgmt/resolv.conf
+  search office.ssa2026.region
+  nameserver 10.2.10.2
+EOF

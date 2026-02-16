@@ -9,6 +9,7 @@ BRIDGE=sw1-cod
 VID=300 
 EOF
 
+
 hostnamectl set-hostname sw1-cod.office.ssa2026.region; exec bash
 domainname cod.ssa2026.region
 systemctl enable --now openvswitch
@@ -52,3 +53,8 @@ auth (Tab) sufficient (Tab) pam_radius_auth.so
 auth (Tab) sufficient (Tab) pam_radius_auth.so
 
 systemctl restart sshd
+
+cat <<EOF > /etc/net/ifaces/mgmt/resolv.conf
+  search cod.ssa2026.region
+  nameserver 192.168.10.1
+EOF

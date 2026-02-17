@@ -38,6 +38,7 @@ systemctl restart radiusd
     allow-query { any; };
     allow-query-cache { any; };
     allow-recursion { any; };
+    dnssec-validation no;
 
 vim /etc/bind/local.conf
 

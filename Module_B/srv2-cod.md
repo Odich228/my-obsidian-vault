@@ -15,4 +15,12 @@ systemctl restart network
 apt-get update && apt-get install -y postgresql17-server
 /etc/init.d/postgresql initdb
 systemctl enable --now postgresql
-
+usermod -s /bin/bash postgres
+usermod -s /bin/bash postgres
+vim /var/lib/pgsql/data/postgresql.conf 
+	listen_addresses = '*'
+	
+vim /var/lib/pgsql/data/pg_hba.conf
+	host    all             superadmin      0.0.0.0/0          md5
+	
+systemctl restart postgresql

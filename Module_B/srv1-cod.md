@@ -8,6 +8,7 @@ echo "default via 10.1.20.1" > /etc/net/ifaces/enp7s2/ipv4route
 echo "nameserver 77.88.8.8" > /etc/net/ifaces/enp7s1/resolv.conf
 hostnamectl set-hostname srv1-cod.cod.ssa2026.region; exec bash
 domainname cod.ssa2026.region
+systemctl restart network
 обновляем систему, скачиваем радиус(freeradius freeradius-utils) и бинд(bind bind-utils)
 
 **Радиус**

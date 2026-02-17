@@ -45,5 +45,9 @@ zone "cod.ssa2026.region" {
 zone "1.10.in-addr.arpa" {
         type forward;
         forward only;
-        forwarders {100.100.100.100; };
+        forwarders { 10.1.10.2; };
 };
+
+cp /etc/bind/zone/127.in-addr.arpa /etc/bind/zone/2.10.in-addr.arpa
+
+vim/etc/bind/zone/1.10.in-addr.arpa

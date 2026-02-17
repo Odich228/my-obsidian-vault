@@ -15,3 +15,4 @@ systemctl restart network
 apt-get update && apt-get install -y postgresql17-server
 /etc/init.d/postgresql initdb
 systemctl enable --now postgresql
+

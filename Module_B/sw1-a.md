@@ -1,3 +1,4 @@
+```
 sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options
 mkdir /etc/net/ifaces/mgmt
 touch /etc/net/ifaces/mgmt/options
@@ -8,7 +9,6 @@ CONFIG_IPV4=yes
 BRIDGE=sw1-a 
 VID=300 
 EOF
-
 hostnamectl set-hostname sw1-a.office.ssa2026.region; exec bash
 domainname office.ssa2026.region
 systemctl enable --now openvswitch
@@ -32,8 +32,6 @@ systemctl restart network
 ovs-vsctl set port mgmt vlan_mode=native-untagged
 modprobe 8021q
 echo "8021q" | tee -a /etc/modules
-
-
 cat <<EOF > /etc/net/ifaces/mgmt/resolv.conf
   search office.ssa2026.region
   nameserver 10.2.10.2

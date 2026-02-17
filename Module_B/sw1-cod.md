@@ -1,3 +1,4 @@
+```
 sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/net/ifaces/enp7s1/options 
 mkdir /etc/net/ifaces/mgmt
 touch /etc/net/ifaces/mgmt/options
@@ -8,7 +9,6 @@ CONFIG_IPV4=yes
 BRIDGE=sw1-cod 
 VID=300 
 EOF
-
 
 hostnamectl set-hostname sw1-cod.office.ssa2026.region; exec bash
 domainname cod.ssa2026.region

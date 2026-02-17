@@ -90,7 +90,7 @@ cp /etc/bind/zone/localhost /etc/bind/zone/1.10.in-addr.arpa
 
 chown root:named /etc/bind/zone/1.10.in-addr.arpa
 
-vim/etc/bind/zone/1.10.in-addr.arpa
+vim /etc/bind/zone/1.10.in-addr.arpa
 	                IN      NS      cod.ssa2026.region.
 	1.10            IN      PTR     fw-cod.cod.ssa2026.region.
 	2.10            IN      PTR     srv1-cod.cod.ssa2026.region.

@@ -69,7 +69,7 @@ ip route 10.1.50.0/24 192.168.1.2
 router ospf 1
 
 router-id 10.10.10.1
-
+redistribute static
 passive-interface default
 
 no passive-interface tunnel.0

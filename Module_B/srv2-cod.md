@@ -11,6 +11,7 @@ cat <<EOF > /etc/net/ifaces/enp7s1/resolv.conf
 EOF
 hostnamectl set-hostname srv2-cod.cod.ssa2026.region; exec bash
 domainname cod.ssa2026.region
+systemctl restart network
 apt-get update && apt-get install -y postgresql17-server
 /etc/init.d/postgresql initdb
 systemctl enable --now postgresql

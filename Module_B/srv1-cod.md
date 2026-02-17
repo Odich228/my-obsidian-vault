@@ -41,6 +41,31 @@ systemctl restart radiusd
 
 vim /etc/bind/local.conf
 
+zone "cod.ssa2026.region" {
+        type master;
+        file "cod.ssa2026.region";
+        allow-transfer { 10.2.10.2; };
+};
+
+zone "1.10.in-addr.arpa" {
+        type master;
+        file "1.10.in-addr.arpa";
+        allow-transfer { 10.2.10.2; };
+};      
+
+zone "office.ssa2026.region" {
+        type forward;
+        forward only;
+        forwarders { 10.2.10.2; };
+};
+
+zone "2.10.in-addr.arpa" {
+        type forward;
+        forward only;
+        forwarders { 10.2.10.2; };
+};
+
+
 cp /etc/bind/zone/localhost /etc/bind/zone/cod.ssa2026.region
 
 chown root:named /etc/bind/zone/cod.ssa2026.region

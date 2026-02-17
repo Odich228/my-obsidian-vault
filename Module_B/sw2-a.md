@@ -17,7 +17,7 @@ sed -i "s/OVS_REMOVE=yes/OVS_REMOVE=no/g" /etc/net/ifaces/default/options
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s2
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s3
 cp -r /etc/net/ifaces/enp7s1 /etc/net/ifaces/enp7s4
-
+systemctl restart network
 ovs-vsctl add-br sw2-a 
 ovs-vsctl add-port sw2-a enp7s1 trunks=100,200,300
 ovs-vsctl add-port sw2-a enp7s2 trunks=100,200,300
@@ -26,15 +26,16 @@ ovs-vsctl add-port sw2-a enp7s4 tag=200
 ovs-vsctl set bridge sw2-a rstp_enable=true
 ovs-vsctl set bridge sw2-a other_config:stp-protocol=rstp
 ovs-vsctl set bridge sw2-a other_config:rstp-priority=1
-
+systemctl restart network
 echo "10.2.30.3/24" > /etc/net/ifaces/mgmt/ipv4address
 echo "default via 10.2.30.1" > /etc/net/ifaces/mgmt/ipv4route
-
+systemctl restart network
 ovs-vsctl set port mgmt vlan_mode=native-untagged
 modprobe 8021q
 echo "8021q" | tee -a /etc/modules
-
+systemctl restart network
 cat <<EOF > /etc/net/ifaces/mgmt/resolv.conf
-  search office.ssa2026.region
-  nameserver 10.2.10.2
+search office.ssa2026.region
+nameserver 10.2.10.2
 EOF
+systemctl restart network

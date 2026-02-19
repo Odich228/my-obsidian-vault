@@ -17,7 +17,7 @@ sudo apt-get update && sudo apt-get install python3-module-openstackclient pytho
 
 
 
-apt-get update && apt-get install .12 gcc make kmod-sign cpio postgresql17 postgresql17-contrib
+apt-get update && apt-get install cpio postgresql17 postgresql17-contrib
 
 /etc/init.d/postgresql initdb
 

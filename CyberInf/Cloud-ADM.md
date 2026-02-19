@@ -22,3 +22,5 @@ apt-get update && apt-get install cpio postgresql17 postgresql17-contrib
 /etc/init.d/postgresql initdb
 
 systemctl enable --now postg
+
+порты машины 

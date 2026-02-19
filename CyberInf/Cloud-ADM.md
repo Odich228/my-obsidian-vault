@@ -24,3 +24,6 @@ apt-get update && apt-get install cpio postgresql17 postgresql17-contrib
 systemctl enable --now postg
 
 порты машины 
+
+
+дир files

@@ -1,0 +1,28 @@
+
+cat << EOF > ~/.ssh/config
+Host *
+    StrictHostKeyChecking no
+EOF
+
+apt-get install ansible -y
+
+===Install APT-RPM package manager====
+
+ansible-galaxy collection install community.general
+
+chmod +x configure_project_01.sh
+
+
+=============PKI==========
+Установка
+    apt-get install easy-rsa
+Инициализация PKI
+    cd /var/ca <---------------------
+    easyrsa init-pki
+создание корневого сертификата (читаем задание!!)
+    easyrsa build-ca nopass
+создание сертификата сервера
+    easyrsa build-server-full root-CA nopass
+создание сертификата клиента
+    easyrsa build-client-full game.au.team -subject-alt-name=DNS:haproxy01.dev.au.team,IP:192.168.10.1 nopass <---------------------
+

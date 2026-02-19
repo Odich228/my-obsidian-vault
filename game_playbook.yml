@@ -1,0 +1,44 @@
+---
+- name: Install docker containers to games hosts
+  hosts: games_hosts
+  become: true
+
+  tasks:
+    - name: Install docker
+      apt_rpm:
+        name: 
+          - docker-engine
+          - docker-buildx
+        state: present
+        update_cache: true
+
+    - name: Started and enabled docker
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Copying the project files
+      copy:
+        src: ../2048-game/
+        dest: "/home/{{ ansible_ssh_user }}/2048-game/"
+
+    - name: Copying the Dockerfile
+      copy:
+        src: ./Dockerfile
+        dest: "/home/{{ ansible_ssh_user }}/2048-game/"
+
+    - name: Build docker image
+      community.docker.docker_image_build:
+        name: "2048-game"
+        tag: latest
+        path: "/home/{{ ansible_ssh_user }}/2048-game/"
+        dockerfile: Dockerfile
+
+    - name: Start docker container
+      community.docker.docker_container:
+        name: "2048-game"
+        image: "2048-game"
+        ports: "80:80"
+        state: started
+        restart: true

@@ -10,6 +10,9 @@ apt-get install ansible -y
 
 ansible-galaxy collection install community.general
 
+ansible-galaxy collection install community.docker:3.10.0 --force
+
+
 chmod +x configure_project_01.sh
 
 
@@ -25,4 +28,5 @@ chmod +x configure_project_01.sh
     easyrsa build-server-full root-CA nopass
 создание сертификата клиента
     easyrsa build-client-full game.au.team -subject-alt-name=DNS:haproxy01.dev.au.team,IP:192.168.10.1 nopass <---------------------
+
 

@@ -1,0 +1,864 @@
+
+# Преднастрой виртуального стенда
+
+## Необходимые мостовые интерфейсы
+
+![Check_Linux_Bridges](img/Check_Linux_Bridges.png)
+
+## Пока работа с HQ OFFICE, стенд выглядит следующим образом
+
+![Check_VirtualMachines](img/Check_VirtualMachines.png)
+
+## ISP
+
+- пока без интеграции с **COD**
+
+![Check_Hardware_ISP](img/Check_Hardware_ISP.png)
+
+В настоящий момент имеем:
+- **ens19** - Магистральный провайдер (vmbr0), подключение DHCP
+- **ens20** - Сеть в сторону **OUT-CLI** (vmbr1), подключение статическое
+- **ens21** - Сеть в сторону **RTR** (vmbr2), подключение статическое
+
+```bash
+[root@localhost ~]# ip -c -br a
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens19            UP             192.168.15.113/24 fe80::be24:11ff:fe57:8b72/64 
+ens20            DOWN           
+ens21            DOWN           
+[root@localhost ~]# 
+```
+
+Базовая настройка:
+- имя
+- адресация
+- forwarding
+
+```bash
+hostnamectl set-hostname ISP; exec bash
+sed -i "s/HOSTNAME=localhost/HOSTNAME=ISP/g" /etc/sysconfig/network
+```
+
+```bash
+mkdir /etc/net/ifaces/ens2{0,1}
+echo "TYPE=eth" > /etc/net/ifaces/ens20/options
+cp /etc/net/ifaces/ens2{0,1}/options
+```
+
+```bash
+mkdir /etc/net/ifaces/lo{1,2}
+echo "TYPE=dummy" > /etc/net/ifaces/lo1/options
+cp /etc/net/ifaces/lo{1,2}/options
+```
+
+```bash
+echo "10.0.0.5/30" > /etc/net/ifaces/ens20/ipv4address
+echo "10.0.0.1/30" > /etc/net/ifaces/ens21/ipv4address
+echo "192.168.255.1/32" > /etc/net/ifaces/lo1/ipv4address
+echo "100.64.1.1/16" > /etc/net/ifaces/lo2/ipv4address
+```
+
+```bash
+sed -i "s/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/g" /etc/net/sysctl.conf
+systemctl restart network
+```
+
+Проверка:
+
+```bash
+[root@ISP ~]# ip -c -br -4 a
+lo               UNKNOWN        127.0.0.1/8 
+ens19            UP             192.168.15.113/24 
+ens20            UP             10.0.0.5/30 
+ens21            UP             10.0.0.1/30 
+lo1              UNKNOWN        192.168.255.1/32 
+lo2              UNKNOWN        100.64.1.1/16 
+[root@ISP ~]# sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+[root@ISP ~]# 
+```
+
+Устанавливаем пакет `frr` и `iptables`:
+
+```bash
+apt-get update && apt-get install -y iptables frr
+```
+
+Настраивает `iptables` для доступа в сеть Интернет из сетей OUT-CLI и RTR:
+
+```bash
+iptables -t nat -A POSTROUTING -s 10.0.0.0/30 -o ens19 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 10.0.0.4/30 -o ens19 -j MASQUERADE
+iptables-save >> /etc/sysconfig/iptables
+systemctl enable --now iptables
+```
+
+Проверка:
+
+```bash
+[root@ISP ~]# iptables -t nat -L -n -v
+Chain PREROUTING (policy ACCEPT 54 packets, 3136 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain INPUT (policy ACCEPT 2 packets, 156 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+    0     0 MASQUERADE  0    --  *      ens19   10.0.0.0/30          0.0.0.0/0           
+    0     0 MASQUERADE  0    --  *      ens19   10.0.0.4/30          0.0.0.0/0           
+[root@ISP ~]# 
+```
+
+Настройка BGP и IS-IS:
+
+```bash
+sed -i "s/bgpd=no/bgpd=yes/g" /etc/frr/daemons
+sed -i "s/isisd=no/isisd=yes/g" /etc/frr/daemons
+systemctl enable --now frr
+vtysh
+```
+
+- `router isis 0` - активация процесса IS-IS с тегом `0`
+- `is-type level-2-only` - принудительно устанавливает тип IS-IS только для уровня 2 (backbone). В нашей топологии используется одна зона, и все маршрутизаторы работают на уровне L2. В рамках задания это обеспечивает маршрутизацию в пределах одной зоны
+- `net 49.0001.1921.6825.5001.00` - задаёт сетевой заголовок (NET — Network Entity Title) для IS-IS. NET однозначно идентифицирует маршрутизатор в домене IS-IS. Структура:
+	- - `49.0001` — идентификатор зоны (area). Здесь выбрана произвольная зона `0001`
+	- `1921.6825.5001` — **SYSTEM ID** (6 октетов). Формируется из адреса loopback интерфейса: 192.168.255.1 преобразуется в 1921.6825.5001 (по два октета IP-адреса, дополненные нулями). Это требование ТЗ: SYSTEM ID должен соответствовать адресу loopback
+	- `.00` — идентификатор процесса (всегда .00 для обычного маршрутизатора).
+- `isis circuit-type level-2-only` - указывает, что данный интерфейс будет работать только как L2-канал. Это соответствует глобальной настройке `is-type level-2-only` и гарантирует, что соседство будет установлено на уровне L2
+- `isis network point-to-point` - принудительно устанавливает режим работы IS-IS на интерфейсе как точка-точка (P2P). По умолчанию на широковещательных средах (Ethernet) IS-IS работает в режиме broadcast с выборами DIS. При использовании `point-to-point` исключаются задержки выборов и упрощается конфигурация
+- `router bgp 64499` - запуск процесса BGP с номером автономной системы 64499. Этот ASN используется провайдером и будет одинаковым для ISP и RTR (iBGP)
+- `bgp router-id 192.168.255.1` - установка идентификатора маршрутизатора BGP (Router ID). Должен быть уникальным в пределах AS. Здесь он явно задан равным адресу loopback интерфейса, что соответствует требованию ТЗ
+- `no bgp ebgp-requires-policy` - отключает обязательное наличие политики (route-map) для eBGP-соседей. В FRR по умолчанию требуется явно разрешать обмен маршрутами с eBGP-соседями. Поскольку у нас только iBGP-сосед, эта команда не обязательна, но её часто включают для упрощения. Она не влияет на iBGP сессию
+- `neighbor 192.168.255.2 remote-as 64499` - определяет соседа BGP. IP-адрес соседа — 192.168.255.2 (loopback RTR). `remote-as 64499` указывает, что сосед находится в той же AS, следовательно, это iBGP сессия
+- `neighbor 192.168.255.2 update-source lo1` - указывает, что для установления TCP-соединения с соседом должен использоваться интерфейс lo1. То есть источником пакетов будет адрес 192.168.255.1. Это необходимо, потому что сосед настроен на свой loopback-адрес 192.168.255.2. Без этой команды BGP попытался бы установить соединение с IP-адреса выходного интерфейса (10.0.0.1), и сосед не принял бы соединение, так как ожидает пакеты от 192.168.255.1
+- `address-family ipv4 unicast` - переход в подрежим настройки адресного семейства IPv4 одноадресной рассылки. Здесь задаются параметры обмена IPv4-маршрутами
+- `network 100.64.0.0/16` - анонсирует сеть 100.64.0.0/16, симулирующую интернет-префикс
+- `neighbor 192.168.255.2 next-hop-self` - устанавливает для маршрутов, отправляемых соседу, значение next-hop равным адресу локального маршрутизатора (192.168.255.1). По умолчанию iBGP сохраняет next-hop, полученный от eBGP. Но поскольку у нас весь трафик идёт через ISP, а RTR не имеет прямого маршрута до внешних next-hop, мы меняем next-hop на себя, чтобы RTR использовал в качестве шлюза ISP
+- `neighbor 192.168.255.2 default-originate` - дополнительный способ анонсирования маршрута по умолчанию. Даже если в таблице маршрутизации нет `0.0.0.0/0`, эта команда заставит BGP отправлять соседу маршрут по умолчанию. Мы использовали и `network 0.0.0.0/0`, и `default-originate` — это избыточно, но безопасно
+- `neighbor 192.168.255.2 soft-reconfiguration inbound` - включает возможность мягкого сброса входящих обновлений. Позволяет просматривать маршруты, полученные от соседа, даже до применения политик. Полезно для отладки
+
+```vtysh
+conf t
+router isis 0
+is-type level-2-only 
+net 49.0001.1921.6825.5001.00
+exit
+interface lo1
+ip route isis 0
+exit
+interface ens21
+ip route isis 0
+isis circuit-type level-2-only 
+isis network point-to-point 
+exit
+router bgp 64499
+bgp router-id 192.168.255.1
+no bgp ebgp-requires-policy 
+neighbor 192.168.255.2 remote-as 64499
+neighbor 192.168.255.2 description iBGP-to-RTR
+neighbor 192.168.255.2 update-source lo1      
+address-family ipv4 unicast 
+network 0.0.0.0/0
+network 100.64.0.0/16
+neighbor 192.168.255.2 next-hop-self 
+neighbor 192.168.255.2 default-originate 
+neighbor 192.168.255.2 soft-reconfiguration inbound 
+exit-address-family 
+end
+wr mem
+```
+
+Проверка:
+
+```vtysh
+ISP# show running-config 
+Building configuration...
+
+Current configuration:
+!
+frr version 10.2.2
+frr defaults traditional
+hostname ISP
+log file /var/log/frr/frr.log
+no ipv6 forwarding
+!
+interface ens21
+ ip router isis 0
+ isis circuit-type level-2-only
+ isis network point-to-point
+exit
+!
+interface lo1
+ ip router isis 0
+exit
+!
+router bgp 64499
+ bgp router-id 192.168.255.1
+ no bgp ebgp-requires-policy
+ neighbor 192.168.255.2 remote-as 64499
+ neighbor 192.168.255.2 description iBGP-to-RTR
+ neighbor 192.168.255.2 update-source lo1
+ !
+ address-family ipv4 unicast
+  network 0.0.0.0/0
+  network 100.64.0.0/16
+  neighbor 192.168.255.2 next-hop-self
+  neighbor 192.168.255.2 default-originate
+  neighbor 192.168.255.2 soft-reconfiguration inbound
+ exit-address-family
+exit
+!
+router isis 0
+ is-type level-2-only
+ net 49.0001.1921.6825.5001.00
+exit
+!
+end
+ISP# 
+```
+
+## Win-DC
+
+Базовая настройка:
+- имя
+- адресация
+
+![Win-DC_Set-Hostname](img/Win-DC_Set-Hostname.png)
+
+![Win-DC_Set-NetSettings](img/Win-DC_Set-NetSettings.png)
+
+Перезагрузить ВМ, после перезагрузки установка ролей AD DS, DNS и DHCP:
+
+- проверка назначения имени и IP-адреса:
+
+![Win-DC_Check_Hostname_and_IP](img/Win-DC_Check_Hostname_and_IP.png)
+
+- установка ролей: AD DS, DNS, DHCP
+
+![Win-DC_Add_Role-and-Components](img/Win-DC_Add_Role-and-Components.png)
+
+- повышение до уровня контроллера домена `ssa2026.semifinal`:
+
+![Win-DC_Create-DC1](img/Win-DC_Create-DC1.png)
+
+![Win-DC_Create-DC2](img/Win-DC_Create-DC2.png)
+
+- Проверка после автоматической перезагрузки:
+
+![Win-DC_Check_Install_DC](img/Win-DC_Check_Install_DC.png)
+
+Создать тестовую структуру: Подразделений, Групп и Пользователей в домене:
+
+![LDAP_OU_Group-and-Users](img/LDAP_OU_Group-and-Users.png)
+
+```PowerShell
+New-ADOrganizationalUnit -Name ADM
+New-ADOrganizationalUnit -Name Sales
+New-ADOrganizationalUnit -Name Delivery
+New-ADOrganizationalUnit -Name Development
+
+New-ADGroup "ADM" -path 'OU=ADM,DC=ssa2026,DC=semifinal' -GroupScope Global -PassThru –Verbose
+New-ADGroup "Sales" -path 'OU=Sales,DC=ssa2026,DC=semifinal' -GroupScope Global -PassThru –Verbose
+New-ADGroup "Delivery" -path 'OU=Delivery,DC=ssa2026,DC=semifinal' -GroupScope Global -PassThru –Verbose
+New-ADGroup "Frontend" -path 'OU=Development,DC=ssa2026,DC=semifinal' -GroupScope Global -PassThru –Verbose
+New-ADGroup "Backend" -path 'OU=Development,DC=ssa2026,DC=semifinal' -GroupScope Global -PassThru –Verbose
+
+New-ADUser -Name "Director" -UserPrincipalName "director@ssa2026.semifinal" -Path "OU=ADM,DC=ssa2026,DC=semifinal" -AccountPassword(ConvertTo-SecureString P@ssw0rd -AsPlainText -Force) -Enabled $true
+New-ADUser -Name "Secretary" -UserPrincipalName "secretary@ssa2026.semifinal" -Path "OU=ADM,DC=ssa2026,DC=semifinal" -AccountPassword(ConvertTo-SecureString P@ssw0rd -AsPlainText -Force) -Enabled $true
+New-ADUser -Name "Alice" -UserPrincipalName "alice@ssa2026.semifinal" -Path "OU=Sales,DC=ssa2026,DC=semifinal" -AccountPassword(ConvertTo-SecureString P@ssw0rd -AsPlainText -Force) -Enabled $true
+New-ADUser -Name "Bob" -UserPrincipalName "bob@ssa2026.semifinal" -Path "OU=Sales,DC=ssa2026,DC=semifinal" -AccountPassword(ConvertTo-SecureString P@ssw0rd -AsPlainText -Force) -Enabled $true
+New-ADUser -Name "Polevikova" -UserPrincipalName "polevikova@ssa2026.semifinal" -Path "OU=Delivery,DC=ssa2026,DC=semifinal" -AccountPassword(ConvertTo-SecureString P@ssw0rd -AsPlainText -Force) -Enabled $true
+New-ADUser -Name "Morgushko" -UserPrincipalName "morgushko@ssa2026.semifinal" -Path "OU=Development,DC=ssa2026,DC=semifinal" -AccountPassword(ConvertTo-SecureString P@ssw0rd -AsPlainText -Force) -Enabled $true
+New-ADUser -Name "Radjkovith" -UserPrincipalName "radjkovith@ssa2026.semifinal" -Path "OU=Development,DC=ssa2026,DC=semifinal" -AccountPassword(ConvertTo-SecureString P@ssw0rd -AsPlainText -Force) -Enabled $true
+
+Add-AdGroupMember -Identity ADM Director, Secretary
+Add-AdGroupMember -Identity Sales Alice, Bob
+Add-AdGroupMember -Identity Delivery Polevikova
+Add-AdGroupMember -Identity Frontend Morgushko
+Add-AdGroupMember -Identity Backend Radjkovith
+```
+
+Проверить: 
+
+![Check_LDAP_Objects](img/Check_LDAP_Objects.png)
+
+Развёрнут DHCP-сервер для клиентской сети из vlan30 в соответствие с топологией L3 и таблицей адресации:
+
+![Win-DC_Check_DHCP](img/Win-DC_Check_DHCP.png)
+
+Настроен DNS-сервер:
+
+![Win-DC_Check_DNS](img/Win-DC_Check_DNS.png)
+
+WinCLI1-HQ введён в домен:
+
+![WinCLI1_Check_Enter_in_Domain](img/WinCLI1_Check_Enter_in_Domain.png)
+
+На WinDC-HQ создана общая папка 'C:\WinShare':
+
+![WinShare1](img/WinShare1.png)
+
+![WinShare2](img/WinShare2.png)
+
+На WinDC-HQ создана общая папка 'C:\profiles' для хранения перемещаемых профилей пользователей подразделения 'Development':
+
+![Win-DC_Roaming_Profiles1](img/Win-DC_Roaming_Profiles1.png)
+
+![Win-DC_Roaming_Profiles2](img/Win-DC_Roaming_Profiles2.png)
+
+На WinDC-HQ создана GPO 'Desktop' для пользователя:
+
+![Check_GPO1](img/Check_GPO1.png)
+
+![Check_GPO1_1](img/Check_GPO1_1.png)
+
+На WinDC-HQ создана GPO 'Removable media' для компьютера:
+
+![Check_GPO2](img/Check_GPO2.png)
+
+![Check_GPO2_1](img/Check_GPO2_1.png)
+
+# Вопросы:
+
+1. Какие ВМ в рамках преднастроя нужно ввести в домен?
+	- Ответ:
+2. Какие GPO в рамках преднастроя нужно создавать и для кого применять?
+	- Ответ: 
+3. Если, например для пользователей подразделения Development создать перемещаемые профили, они заведутся потом на Альт Домене и файловом сервере? Т.к. я работал в Linux с перемещаемыми профилями: FreeIPA + NFS + AutoFS
+	- Ответ:
+4. Что ещё накручивать на домене в рамках преднастроя?
+	- Ответ (ы):
+
+# Реализация самого задания:
+
+>[!IMPORTANT]
+> Пока последовательное выполнение, а при формировании итогового варианта задания перетасуем последовательность, чтобы участники думали и читали задание внимательно
+
+## Настройка коммутации
+
+Настройка коммутации
+1. Все порты, участвующие в коммутации, должны быть настроены в соответствии с диаграммой L2
+
+>[!IMPORTANT]
+> Вроде как корректный блок задания, ниже всё оттестировано, вроде как выполняется
+
+### Гипервизор
+
+За маршрутизацию между VLAN-ами в офисе HQ - отвечает FW-HQ, ниже будет реализована маршрутизация между VLAN. С точки зрения коммутации, просто раскидываем теги (VID) на каждую ВМ в соответствие с L2-топологией, например:
+
+![Win-DC_Check_VID](img/Win-DC_Check_VID.png)
+
+![LinSRV1_Check_VID](img/LinSRV1_Check_VID.png)
+
+![WinCLI1_Check_VID](img/WinCLI1_Check_VID.png)
+
+![LinADM_Check_VID](img/LinADM_Check_VID.png)
+
+И так далее ...
+
+## Настройка обмена маршрутной информацией по протоколу BGP на маршрутизаторе RTR-HQ
+
+Настройка обмена маршрутной информацией по протоколу BGP на маршрутизаторе RTR-HQ
+1. В качестве ASN используйте 64499 (AS Провайдера);
+2. Доступ в Интернет предоставляется через ISP. Маршруты необходимо передавать по iBGP; 
+3. Используйте loopback.0 интерфейс для установления соседства по iBGP;
+4. В качестве IGP используйте протокол IS-IS;
+	- Используйте маршрутизацию в пределах одной зоны;
+	- Используйте адрес loopback интерфейса в качестве SYSTEM ID;
+5. RID BGP должен соответствовать адресу loopback интерфейса;
+6. Анонсировать внутренние сети в провайдера запрещено;
+7. Маршрутизатор RTR должен получать маршрут по умолчанию через BGP
+	- Ручное создание маршрута по умолчанию не допускается
+
+>[!IMPORTANT]
+> Вроде как корректный блок задания, ниже всё оттестировано, вроде как выполняется
+
+### RTR-HQ:
+
+База: 
+- имя 
+- доменное имя
+
+```text
+enable
+configure terminal
+hostname rtr-hq
+ip domain-name ssa2026.semifinal
+```
+
+В настоящий момент имеем:
+- `te0` - порт в сторону ISP
+- `te1` - порт в сторону FW-HQ
+
+```text
+rtr-hq(config)#do show port brief
+ Name             Physical   Admin   Lacp    Description
+ ------------------------------------------------------------
+ te0              UP         UP      *       
+ te1              UP         UP      *       
+rtr-hq(config)#
+```
+
+Выполняем подключение к провайдеру ISP:
+- создаём интерфейс
+- назначаем IP-адрес
+- связываем интерфейс с портом
+
+```text
+interface int0
+description "Connect-to-ISP"
+ip address 10.0.0.2/30
+exit
+port te0
+service-instance te0/int0
+encapsulation untagged 
+connect ip interface int0 
+exit
+exit
+```
+
+Проверить:
+
+```text
+rtr-hq(config)#do show ip interface brief 
+ Interface        IP-Address          Status                 VRF
+ ----------------------------------------------------------------
+ int0             10.0.0.2/30         up                     default
+rtr-hq(config)#do ping 10.0.0.1
+PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
+64 bytes from 10.0.0.1: icmp_seq=1 ttl=64 time=17.5 ms
+64 bytes from 10.0.0.1: icmp_seq=2 ttl=64 time=16.6 ms
+64 bytes from 10.0.0.1: icmp_seq=3 ttl=64 time=15.8 ms
+
+--- 10.0.0.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+rtt min/avg/max/mdev = 15.778/16.610/17.503/0.705 ms
+rtr-hq(config)#
+```
+
+Создаём интерфейс `loopback.0` и назначаем на него IP-адрес:
+
+```text
+interface loopback.0
+ip address 192.168.255.2/32
+no shutdown 
+exit
+```
+
+Проверить:
+
+```text
+rtr-hq(config)#do show ip interface brief 
+ Interface        IP-Address          Status                 VRF
+ ----------------------------------------------------------------
+ int0             10.0.0.2/30         up                     default
+ loopback.0       192.168.255.2/32    up                     default
+rtr-hq(config)#
+```
+
+Минимальная конфигурация IS-IS:
+
+```text
+router isis
+net 49.0001.1921.6825.5002.00
+is-type level-2-only
+metric-style wide
+passive-interface loopback.0 
+exit
+
+interface int0 
+ip router isis
+isis circuit-type level-2-only
+isis network point-to-point
+exit
+
+interface loopback.0
+ip router isis
+exit
+```
+
+Проверить:
+
+```text
+rtr-hq(config)#do show ip route isis
+IP Route Table for VRF "default"
+i L2    192.168.255.1/32 [115/20] via 10.0.0.1, int0, 00:02:55
+
+Gateway of last resort is not set
+rtr-hq(config)#do ping 192.168.255.1
+PING 192.168.255.1 (192.168.255.1) 56(84) bytes of data.
+64 bytes from 192.168.255.1: icmp_seq=1 ttl=64 time=12.5 ms
+64 bytes from 192.168.255.1: icmp_seq=2 ttl=64 time=11.9 ms
+64 bytes from 192.168.255.1: icmp_seq=3 ttl=64 time=11.2 ms
+
+--- 192.168.255.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 11.239/11.885/12.509/0.518 ms
+rtr-hq(config)#
+```
+
+Минимальная конфигурация BGP:
+
+```text
+router bgp 64499
+bgp router-id 192.168.255.2
+bgp log-neighbor-changes
+neighbor 192.168.255.1 remote-as 64499
+neighbor 192.168.255.1 update-source loopback.0
+neighbor 192.168.255.1 description iBGP-to-ISP
+address-family ipv4 unicast
+neighbor 192.168.255.1 activate
+neighbor 192.168.255.1 next-hop-self
+exit-address-family
+exit
+```
+
+Проверить:
+
+```text
+rtr-hq#show ip bgp summary 
+BGP router identifier 192.168.255.2, local AS number 64499
+BGP table version is 2
+1 BGP AS-PATH entries
+0 BGP community entries
+
+Neighbor        V    AS     MsgRcv    MsgSen    TblVer  InQ   OutQ   Up/Down   State/PfxRcd
+-------------------------------------------------------------------------------------------
+192.168.255.1   4    64499  10        8         2       0     0      00:02:37     2
+
+Total number of neighbors 1
+
+Total number of Established sessions 1
+rtr-hq#
+```
+
+```text
+rtr-hq#show ip route 
+Codes: C - connected, S - static, R - RIP, B - BGP
+       O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default
+
+IP Route Table for VRF "default"
+Gateway of last resort is 192.168.255.1 to network 0.0.0.0
+
+B*      0.0.0.0/0 [200/0] via 192.168.255.1 (recursive  via 10.0.0.1), 00:03:04
+C       10.0.0.0/30 is directly connected, int0
+B       100.64.0.0/16 [200/0] via 192.168.255.1 (recursive  via 10.0.0.1), 00:03:04
+i L2    192.168.255.1/32 [115/20] via 10.0.0.1, int0, 00:08:10
+C       192.168.255.2/32 is directly connected, loopback.0
+rtr-hq#ping 77.88.8.8
+PING 77.88.8.8 (77.88.8.8) 56(84) bytes of data.
+64 bytes from 77.88.8.8: icmp_seq=1 ttl=55 time=38.1 ms
+64 bytes from 77.88.8.8: icmp_seq=2 ttl=55 time=29.5 ms
+64 bytes from 77.88.8.8: icmp_seq=3 ttl=55 time=36.0 ms
+
+--- 77.88.8.8 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+rtt min/avg/max/mdev = 29.531/34.530/38.069/3.635 ms
+rtr-hq#
+```
+
+## Настройка обмена маршрутной информацией по протоколу OSPF на маршрутизаторе RTR-HQ и межсетевом экране FW-HQ
+
+Настройка обмена маршрутной информацией по протоколу OSPF на маршрутизаторе RTR-HQ и межсетевом экране FW-HQ
+1. Сетевые устройства должны быть защищены от вброса маршрутов с любых интерфейсов, кроме тех, на которых обмен маршрутами явно требуется
+2. FW-HQ должен получать маршрут по умолчанию и другие необходимые маршруты от RTR-HQ через OSPF.
+	- Ручное создание маршрута по умолчанию на FW-HQ не допускается
+
+>[!IMPORTANT]
+> Вроде как корректный блок задания, ниже всё оттестировано, вроде как выполняется
+
+### RTR-HQ:
+
+Выполняем подключение в сторону FW-HQ:
+- создаём интерфейс
+- назначаем IP-адрес
+- связываем интерфейс с портом
+
+```text
+interface int1
+description "Connect-to-FW-HQ"
+ip address 172.16.0.2/30
+exit
+port te1
+service-instance te1/int1
+encapsulation untagged 
+connect ip interface int1
+exit
+exit
+```
+
+Проверить:
+
+```text
+rtr-hq(config)#do show ip interface brief 
+ Interface        IP-Address          Status                 VRF
+ ----------------------------------------------------------------
+ int0             10.0.0.2/30         up                     default
+ loopback.0       192.168.255.2/32    up                     default
+ int1             172.16.0.2/30       up                     default
+rtr-hq(config)#
+```
+
+Минимальная конфигурация OSPF:
+
+```text
+router ospf 1
+passive-interface default
+no passive-interface int1 
+network 172.16.0.0/30 area 0
+default-information originate
+exit
+```
+
+### FW-COD:
+
+Задаём имя:
+
+```shell
+localhost> enable 
+Type the administrator password: 
+localhost# 
+```
+
+```text
+machine set hostname fw-hq.ssa2026.semifinal
+```
+
+Для организации обработки трафика из нескольких VLAN выполните следующие действия:
+- Завершите работу управляющей службы
+- Измените класс интерфейса, к которому подключен коммутатор
+
+```shell
+fw-hq.ssa2026.semifinal# iplir stop
+Shutting down IpLir
+..
+fw-hq.ssa2026.semifinal# inet ifconfig eth1 class trunk
+All IP addresses and their aliases on this interface will be deleted.
+Continue?[Yes,No]: Yes
+Interface eth1 has lost DHCP configured information such as default gateway,
+DNS and NTP servers.  This may affect network connectivity and local services
+like DNS and NTP.  Please check their status manually.
+eth1 set to trunk class.
+fw-hq.ssa2026.semifinal# 
+```
+
+- Задайте номера виртуальных интерфейсов, которые будут соответствовать виртуальным сетям за коммутатором:
+
+```shell
+fw-hq.ssa2026.semifinal# inet ifconfig eth1 vlan add 666
+The new vlan interface eth1.666 has been created.
+Use command "iplir config" and add this interface to configuration in order to use it.
+fw-hq.ssa2026.semifinal# 
+```
+
+```shell
+inet ifconfig eth1 vlan add 10
+inet ifconfig eth1 vlan add 20
+inet ifconfig eth1 vlan add 30
+```
+
+- Присвойте IP-адреса виртуальным интерфейсам:
+
+```shell
+inet ifconfig eth1.666 address 10.6.6.1 netmask 255.255.255.0
+inet ifconfig eth1.10 address 172.16.10.1 netmask 255.255.255.0
+inet ifconfig eth1.20 address 172.16.20.1 netmask 255.255.255.0
+inet ifconfig eth1.30 address 172.16.30.1 netmask 255.255.255.0
+```
+
+- Откройте для редактирования конфигурационный файл `iplir.conf`:
+
+```shell
+iplir config
+```
+
+- В секции `[adapter]` с описанием интерфейса, к которому подключен коммутатор, присвойте параметру `allowtraffic` значение `off`:
+
+```text
+[adapter]
+name= eth1
+allowtraffic= off
+type= internal
+```
+
+- Добавьте секции `[adapter]`, описывающие созданные виртуальные интерфейсы:
+
+```text
+[adapter]
+name= eth1.666
+allowtraffic= on
+type= internal
+
+[adapter]
+name= eth1.10
+allowtraffic= on
+type= internal
+
+[adapter]
+name= eth1.20
+allowtraffic= on
+type= internal
+
+[adapter]
+name= eth1.30
+allowtraffic= on
+type= internal
+```
+
+- Включите физический интерфейс, к которому подключен коммутатор
+	- При этом автоматически будут включены созданные виртуальные интерфейсы
+- Запустите управляющую службу
+
+```shell
+inet ifconfig eth1 up
+iplir start
+```
+
+Проверить:
+
+```shell
+fw-hq.ssa2026.semifinal# inet show vlan
+VLAN intefaces
+Id      | Name          | IP            | Parent| Comment
+10      | eth1.10       | 172.16.10.1   | eth1  | 
+20      | eth1.20       | 172.16.20.1   | eth1  | 
+30      | eth1.30       | 172.16.30.1   | eth1  | 
+666     | eth1.666      | 10.6.6.1      | eth1  | 
+fw-hq.ssa2026.semifinal# 
+```
+
+Добавить разрешающие правила в firewall, чтобы появилась возможность настраивать FW-HQ, через веб-интерфейс с CliADM-HQ:
+
+```shell
+firewall local add 1 rule "WebUI-incoming" src 10.6.6.6 dst @local service @HTTP pass
+firewall local add 2 rule "WebUI-outgoing" src @local dst 10.6.6.6 service @HTTP pass
+```
+
+### CliADM-HQ:
+
+Задать имя:
+
+```bash
+hostnamectl set-hostname CliADM-HQ.ssa2026.semifinal; exec bash
+```
+
+Задать IP-адрес и адрес шлюза по умолчанию на интерфейс:
+
+![CliADM-HQ_Check_IP](img/CliADM-HQ_Check_IP.png)
+
+В браузере обратиться на http://10.6.6.1:8080:
+- ввести пароль `P@ssw0rd`
+- переключиться из режима пользователя в режим администрирования, указав пароль `P@ssw0rd`
+
+![xFirewall_WebUI_Access1](img/xFirewall_WebUI_Access1.png)
+
+![xFirewall_WebUI_Access2](img/xFirewall_WebUI_Access2.png)
+
+![xFirewall_WebUI_Access3](img/xFirewall_WebUI_Access3.png)
+
+Выполняем подключение в сторону RTR-HQ:
+
+![xFirewall_WebUI_SetAddress](img/xFirewall_WebUI_SetAddress.png)
+
+![xFirewall_WebUI_GetAddress](img/xFirewall_WebUI_GetAddress.png)
+
+Настраиваем OSPF:
+
+![xFirewall_WebUI_SetOSPF](img/xFirewall_WebUI_SetOSPF.png)
+
+Добавляем правила в firewall для трафика OSPF:
+- WebUI - конечно тот ещё...
+
+```shell
+firewall local add 3 rule "OSPF-incoming" src 172.16.0.2 dst @local service @OSPF pass
+firewall local add 4 rule "OSPF-outgoing" src @local dst @any service @OSPF pass
+```
+
+- Так они выглядят в WebUI:
+
+![xFirewall_WebUI_Check_FirewallRules](img/xFirewall_WebUI_Check_FirewallRules.png)
+
+Проверить:
+
+![xFirewall_WebUI_CheckOSPF1](img/xFirewall_WebUI_CheckOSPF1.png)
+
+![xFirewall_WebUI_CheckOSPF2](img/xFirewall_WebUI_CheckOSPF2.png)
+
+```text
+rtr-hq#show ip ospf neighbor 
+
+Total number of full neighbors: 1
+OSPF process 1 VRF(default):
+Neighbor ID     Pri   State            Dead Time   Address         Interface           Instance ID
+172.16.30.1       1   Full/Backup      00:00:37    172.16.0.1      int1                    0
+rtr-hq#show ip route ospf 
+IP Route Table for VRF "default"
+O       10.6.6.0/24 [110/11] via 172.16.0.1, int1, 00:04:06
+O       172.16.10.0/24 [110/11] via 172.16.0.1, int1, 00:04:06
+O       172.16.20.0/24 [110/11] via 172.16.0.1, int1, 00:04:06
+O       172.16.30.0/24 [110/11] via 172.16.0.1, int1, 00:04:06
+
+Gateway of last resort is not set
+rtr-hq#
+```
+
+## Настройка динамической трансляции адресов
+
+Настройка динамической трансляции адресов
+1. Настройте на маршрутизаторах динамическую трансляцию адресов
+2. Все устройства во всех офисах должны иметь доступ к сети Интернет
+
+>[!IMPORTANT]
+> Вроде как корректный блок задания, ниже всё оттестировано, вроде как выполняется
+
+### RTR-HQ:
+
+С точки зрения EcoRouter - реализуем конфигурацию static source PAT:
+- интерфейс в сторону ISP с именем `int0` - назначаем как `nat outside`
+- интерфейс `int1` в сторону FW-HQ - назначаем как `nat inside`
+
+```text
+interface int0
+ip nat outside
+exit
+
+interface int1
+ip nat inside
+exit
+```
+
+- создаём пул адресов с именем HQ для входящего трафика - указываем диапазон адресов локальных сетей:
+
+```text
+ip nat pool HQ 172.16.0.0-172.16.255.255
+ip nat pool HQ-MGMT 10.6.6.1-10.6.6.254
+```
+
+- задаём правила для трансляции адресов:
+
+```text
+ip nat source dynamic inside pool HQ overload interface int0
+ip nat source dynamic inside pool HQ-MGMT overload interface int0
+```
+
+### FW-HQ:
+
+В веб-интерфейсе создаём правило для транзитного трафика, разрешая ICMP, DNS, HTTP и SSL:
+
+![xFirewall_WebUI_AllowICMP](img/xFirewall_WebUI_AllowICMP.png)
+
+### CliADM-HQ:
+
+Проверить доступ в сеть Интернет, а также маршрутизацию между VLAN, проверив связность с WinDC-HQ:
+
+![CliADM-HQ_Check_ping](img/CliADM-HQ_Check_ping.png)
+
+

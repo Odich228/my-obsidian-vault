@@ -1,0 +1,367 @@
+
+# Преднастрой виртуального стенда
+
+## Необходимые мостовые интерфейсы
+
+![Check_Linux_Bridges](img/Check_Linux_Bridges.png)
+
+## Виртуальный стенд
+
+![Check_VirtualMachines](img/Check_VirtualMachines.png)
+
+## Необходимый преднастрой на ВМ
+
+### ISP:
+
+![Check_Hardware_ISP](img/Check_Hardware_ISP.png)
+
+В настоящий момент имеем:
+- **ens19** - Магистральный провайдер (vmbr0), подключение DHCP
+- **ens20** - Сеть в сторону **FW-HQ** (vmbr1), подключение статическое
+- **ens21** - Сеть в сторону **RTR-BR** (vmbr2), подключение статическое
+- **ens22** - Сеть в сторону **OUT-CLI** (vmbr3), подключение статическое
+
+```bash
+[root@localhost ~]# ip -c -br a
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens19            UP             192.168.15.163/24 fe80::be24:11ff:fe8a:ba96/64 
+ens20            DOWN           
+ens21            DOWN           
+ens22            DOWN           
+[root@localhost ~]# 
+```
+
+Базовая настройка:
+- имя
+- адресация
+- forwarding
+
+```bash
+hostnamectl set-hostname ISP; exec bash
+sed -i "s/HOSTNAME=localhost/HOSTNAME=ISP/g" /etc/sysconfig/network
+```
+
+```bash
+mkdir /etc/net/ifaces/ens2{0,1,2}
+echo "TYPE=eth" > /etc/net/ifaces/ens20/options
+cp /etc/net/ifaces/ens2{0,1}/options
+cp /etc/net/ifaces/ens2{0,2}/options
+```
+
+```bash
+mkdir /etc/net/ifaces/lo{1,2}
+echo "TYPE=dummy" > /etc/net/ifaces/lo1/options
+cp /etc/net/ifaces/lo{1,2}/options
+```
+
+```bash
+echo "63.27.19.254/23" > /etc/net/ifaces/ens20/ipv4address
+echo "84.212.78.94/27" > /etc/net/ifaces/ens21/ipv4address
+echo "34.95.33.254/24" > /etc/net/ifaces/ens22/ipv4address
+echo "192.168.255.1/32" > /etc/net/ifaces/lo1/ipv4address
+echo "100.64.1.1/16" > /etc/net/ifaces/lo2/ipv4address
+```
+
+```bash
+sed -i "s/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/g" /etc/net/sysctl.conf
+systemctl restart network
+```
+
+Проверка:
+
+```bash
+[root@ISP ~]# ip -c -br -4 a
+lo               UNKNOWN        127.0.0.1/8 
+ens19            UP             192.168.15.163/24 
+ens20            UP             63.27.19.254/23 
+ens21            UP             84.212.78.94/27 
+ens22            UP             34.95.33.254/24 
+lo1              UNKNOWN        192.168.255.1/32 
+lo2              UNKNOWN        100.64.1.1/16 
+[root@ISP ~]# sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+[root@ISP ~]# 
+```
+
+Устанавливаем пакет `frr` и `iptables`:
+
+```bash
+apt-get update && apt-get install -y iptables frr
+```
+
+Настраивает `iptables` для доступа в сеть Интернет из сетей FW-HQ, RTR-BR и OUT-CLI:
+
+```bash
+iptables -t nat -A POSTROUTING -s 63.27.18.0/23 -o ens19 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 84.212.78.64/27 -o ens19 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 34.95.33.0/24 -o ens19 -j MASQUERADE
+iptables-save >> /etc/sysconfig/iptables
+systemctl enable --now iptables
+```
+
+Проверка:
+
+```bash
+[root@ISP ~]# iptables -t nat -L -n -v
+Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+    0     0 MASQUERADE  0    --  *      ens19   63.27.18.0/23        0.0.0.0/0           
+    0     0 MASQUERADE  0    --  *      ens19   84.212.78.64/27      0.0.0.0/0           
+    0     0 MASQUERADE  0    --  *      ens19   34.95.33.0/24        0.0.0.0/0           
+[root@ISP ~]#
+```
+
+Настройка BGP и IS-IS:
+
+```bash
+sed -i "s/bgpd=no/bgpd=yes/g" /etc/frr/daemons
+sed -i "s/isisd=no/isisd=yes/g" /etc/frr/daemons
+systemctl enable --now frr
+vtysh
+```
+
+```text
+conf t
+router isis 0
+is-type level-2-only 
+net 49.0001.1921.6825.5001.00
+exit
+interface lo1
+ip route isis 0
+exit
+interface ens21
+ip route isis 0
+isis circuit-type level-2-only 
+isis network point-to-point 
+exit
+router bgp 64499
+bgp router-id 192.168.255.1
+no bgp ebgp-requires-policy 
+neighbor 192.168.255.2 remote-as 64499
+neighbor 192.168.255.2 description iBGP-to-RTR
+neighbor 192.168.255.2 update-source lo1      
+address-family ipv4 unicast 
+network 0.0.0.0/0
+network 100.64.0.0/16
+neighbor 192.168.255.2 next-hop-self 
+neighbor 192.168.255.2 default-originate 
+neighbor 192.168.255.2 soft-reconfiguration inbound 
+exit-address-family 
+end
+wr mem
+```
+
+Проверка:
+- `is-type level-2-only` - принудительно устанавливает тип IS-IS только для уровня 2 (backbone). В нашей топологии используется одна зона, и все маршрутизаторы работают на уровне L2. В рамках задания это обеспечивает маршрутизацию в пределах одной зоны
+- `net 49.0001.1921.6825.5001.00` - задаёт сетевой заголовок (NET — Network Entity Title) для IS-IS. NET однозначно идентифицирует маршрутизатор в домене IS-IS. Структура:
+	- - `49.0001` — идентификатор зоны (area). Здесь выбрана произвольная зона `0001`
+	- `1921.6825.5001` — **SYSTEM ID** (6 октетов). Формируется из адреса loopback интерфейса: 192.168.255.1 преобразуется в 1921.6825.5001 (по два октета IP-адреса, дополненные нулями). Это требование ТЗ: SYSTEM ID должен соответствовать адресу loopback
+	- `.00` — идентификатор процесса (всегда .00 для обычного маршрутизатора).
+- `isis circuit-type level-2-only` - указывает, что данный интерфейс будет работать только как L2-канал. Это соответствует глобальной настройке `is-type level-2-only` и гарантирует, что соседство будет установлено на уровне L2
+- `isis network point-to-point` - принудительно устанавливает режим работы IS-IS на интерфейсе как точка-точка (P2P). По умолчанию на широковещательных средах (Ethernet) IS-IS работает в режиме broadcast с выборами DIS. При использовании `point-to-point` исключаются задержки выборов и упрощается конфигурация
+
+```text
+ISP# show running-config 
+Building configuration...
+
+Current configuration:
+!
+frr version 10.2.2
+frr defaults traditional
+hostname ISP
+log file /var/log/frr/frr.log
+no ipv6 forwarding
+!
+interface ens21
+ ip router isis 0
+ isis circuit-type level-2-only
+ isis network point-to-point
+exit
+!
+interface lo1
+ ip router isis 0
+exit
+!
+router bgp 64499
+ bgp router-id 192.168.255.1
+ no bgp ebgp-requires-policy
+ neighbor 192.168.255.2 remote-as 64499
+ neighbor 192.168.255.2 description iBGP-to-RTR
+ neighbor 192.168.255.2 update-source lo1
+ !
+ address-family ipv4 unicast
+  network 0.0.0.0/0
+  network 100.64.0.0/16
+  neighbor 192.168.255.2 next-hop-self
+  neighbor 192.168.255.2 default-originate
+  neighbor 192.168.255.2 soft-reconfiguration inbound
+ exit-address-family
+exit
+!
+router isis 0
+ is-type level-2-only
+ net 49.0001.1921.6825.5001.00
+exit
+!
+end
+ISP# 
+```
+
+### WinDC-HQ:
+
+@vladimir-shalnev - напишите тут список того, что нужно сделать на **WinDC-HQ**, а также если что-то ещё на других ВМ, например: ввести в домен **WinCLI1-HQ** и т.к.
+- text
+- text
+- text
+и т.д.
+
+# Реализация самого задания:
+
+Пока без формулировки конкретных пунктов, просто - где и что делаю на стенде.
+
+## FW-HQ:
+
+Настройка интерфейса управления, для доступа к веб-интерфейсу с **LinADM-HQ**:
+- **vmbr1** - для подключения к провайдеру **ISP**
+- **vmbr4** - для локальной сети (маршрутизация между VLAN)
+
+![Check_FW-HQ_Hardware](img/Check_FW-HQ_Hardware.png)
+
+- Создаём **Ethernet-интерфейс** с именем **mgmt** и задаём IP-адрес из произвольной сети:
+
+![Ideco_CP1](img/Ideco_CP1.png)
+
+![Ideco_CP2](img/Ideco_CP2.png)
+
+![Ideco_CP3](img/Ideco_CP3.png)
+
+Результат:
+
+![Ideco_CP4](img/Ideco_CP4.png)
+
+## LinADM-HQ:
+
+Назначаем имя на устройство в формате FQDN (ssa2026.semifinal).
+Назначаем IP-адрес из той же сети что и **FW-HQ**:
+
+![Check_LinADM-HQ_Address](img/Check_LinADM-HQ_Address.png)
+
+Переходим в веб-интерфейс управления **FW-HQ**, обращаясь по https://172.16.16.16:8443:
+
+![Check_WebAccess_FW-HQ](img/Check_WebAccess_FW-HQ.png)
+
+Назначаем имя на устройство в формате FQDN (ssa2026.semifinal).
+Создаём VLAN интерфейс на основе физического и указываем VID и IP-адрес в соответствие с L2 и L3:
+
+![FW-HQ_Create_vlan30](img/FW-HQ_Create_vlan30.png)
+
+Результат:
+
+![FW-HQ_Check_vlan30](img/FW-HQ_Check_vlan30.png)
+
+Выполняем коммутацию для **LinADM-HQ** в соответствие с L2:
+
+![Switching_LinADM-HQ](img/Switching_LinADM-HQ.png)
+
+Перенастраиваем IP-адрес на интерфейсе для **LinADM-HQ** в соответствие с  L3:
+
+![LinADM_Check_IP](img/LinADM_Check_IP.png)
+
+Теперь доступ в веб-интерфейс управления **FW-HQ**, обращаясь по https://172.16.0.1:8443:
+- выполняем вход и удаляем IP-адрес с интерфейса **mgmt**
+- НО не удаляем сам интерфейс!
+
+![FW-HQ_Delete_mgmt](img/FW-HQ_Delete_mgmt.png)
+
+Результат:
+- теперь есть соответствие как L2, так и L3
+
+![FW-HQ_Check_mgmt](img/FW-HQ_Check_mgmt.png)
+
+Скачаем корневой сертификат и добавим в хранилище для **LinADM-HQ**:
+
+![FW-HQ_RootCA](img/FW-HQ_RootCA.png)
+
+```bash
+mv /home/user/Загрузки/root_ca.crt /etc/pki/ca-trust/source/anchors/ && update-ca-trust
+```
+
+Результат:
+
+![Check_FW-HQ_RootCA](img/Check_FW-HQ_RootCA.png)
+
+Выполним добавление Ethernet-интерфейса с ролью WAN - для подключения к **ISP** в соответствие с L3:
+
+![FW-HQ_Connect_WAN1](FW-HQ_Connect_WAN1.png)
+
+Результат:
+
+![FW-HQ_Connect_WAN2](img/FW-HQ_Connect_WAN2.png)
+
+Для доступа к сети интернет нужно настроить Балансировку и резервирование:
+
+![FW-HQ_Connect_WAN3](img/FW-HQ_Connect_WAN3.png)
+
+Результат:
+
+![FW-HQ_Connect_WAN4](img/FW-HQ_Connect_WAN4.png)
+
+```bash
+[admin@fw-hq ~]# ping -c3 my.ideco.ru
+PING my.ideco.ru (158.160.183.218) 56(84) bytes of data.
+64 bytes from 158.160.183.218: icmp_seq=1 ttl=54 time=20.4 ms
+64 bytes from 158.160.183.218: icmp_seq=2 ttl=54 time=18.1 ms
+64 bytes from 158.160.183.218: icmp_seq=3 ttl=54 time=17.9 ms
+
+--- my.ideco.ru ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 17.948/18.802/20.353/1.098 ms
+[admin@fw-hq ~]# 
+```
+
+Добавление лицензии (результат):
+
+![FW-HQ_Check_CA](img/FW-HQ_Check_CA.png)
+
+Создать все необходимые VLAN в соответствие с L2 и L3 аналогично как для vlan 30 (результат):
+
+![FW-HQ_Check_Interfaces](img/FW-HQ_Check_Interfaces.png)
+
+Создадим учётную запись **network-tmp**, сделаем на её основе авторизацию по подсети **172.16.0.0/16**, чтобы у всех устройств временно был доступ в сеть Интернет:
+- потом разведём на различные способы авторизации и уже на основе доменных пользователей
+
+![HQ-FW_Authorization1](img/HQ-FW_Authorization1.png)
+
+![HQ-FW_Authorization2](img/HQ-FW_Authorization2.png)
+
+Результат:
+
+![HQ-FW_Authorization3](img/HQ-FW_Authorization3.png)
+
+## RTR-BR:
+
+Планируется реализовать вот такой блок:
+
+```text
+Настройка обмена маршрутной информацией по протоколу BGP на маршрутизаторе RTR-BR
+1. В качестве ASN используйте 64499 (AS Провайдера);
+2. Доступ в Интернет предоставляется через ISP. Маршруты необходимо передавать по iBGP; 
+3. Используйте loopback.0 интерфейс для установления соседства по iBGP;
+4. В качестве IGP используйте протокол IS-IS;
+	- Используйте маршрутизацию в пределах одной зоны;
+	- Используйте адрес loopback интерфейса в качестве SYSTEM ID;
+5. RID BGP должен соответствовать адресу loopback интерфейса;
+6. Анонсировать внутренние сети в провайдера запрещено;
+7. Маршрутизатор RTR должен получать маршрут по умолчанию через BGP
+	- Ручное создание маршрута по умолчанию не допускается
+```
+

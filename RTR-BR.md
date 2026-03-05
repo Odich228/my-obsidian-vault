@@ -13,3 +13,7 @@ encapsulation untagged
 connect ip interface e1
 exit
 exit
+username net_admin
+role admin
+password P@ssw0rd
+exit

@@ -10,6 +10,6 @@ exit
 port te1
 service-instance FW-BR
 encapsulation untagged 
-connection ip interface e1
+connect ip interface e1
 exit
 exit

@@ -68,3 +68,14 @@ exit-address-family
 exit
 
 write memory
+
+
+router ospf 2
+area 1 stub
+passive-interface default
+no passive-interface int1 
+network 10.2.0.0/30 area 0
+default-information originate
+exit
+
+write memory

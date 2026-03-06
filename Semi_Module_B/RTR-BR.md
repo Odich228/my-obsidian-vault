@@ -29,7 +29,7 @@ exit
 port te1
 service-instance FW-BR
 encapsulation untagged 
-connect ip interface int1
+connect ip interface e1
 exit
 exit
 

@@ -33,3 +33,6 @@ type= internal
 
 inet ifconfig eth1 up
 iplir start
+
+inet ifconfig eth0 address 10.2.0.2 netmask 255.255.255.252
+

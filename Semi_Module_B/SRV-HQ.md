@@ -18,5 +18,17 @@ ipa-server-install
 	4.P@ssw0rd
 	5.yes
 	6.-
-	
-	
+	7.-
+	8.77.88.8.8
+	9.-
+	10.yes
+	11.-
+	12.-
+	13.-
+	14.yes
+	15.-
+	16.-
+	17.yes
+ipactl status  (ПРОВЕРКА)
+echo "allow-query { any; };" >> /etc/bind/ipa-options-ext.conf
+ipactl restart

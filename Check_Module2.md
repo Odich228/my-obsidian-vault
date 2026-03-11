@@ -879,7 +879,7 @@ apt-get install -y kea-dhcp4
 ```bash
 cat <<EOF > /etc/kea/kea-dhcp4.conf
 {
-  "Dhcp4": {
+  "Dhcp4":i {
     "valid-lifetime": 86400,
     "renew-timer": 43200,
     "rebind-timer": 75600,

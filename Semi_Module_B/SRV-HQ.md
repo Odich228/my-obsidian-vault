@@ -32,3 +32,6 @@ ipa-server-install
 ipactl status  (ПРОВЕРКА)
 echo "allow-query { any; };" >> /etc/bind/ipa-options-ext.conf
 ipactl restart
+echo "P@ssw0rd" | kinit admin@AU.TEAM
+ipa role-add "CIFS server" --desc="Role for CIFS server"
+ipa role-add "Organization units" --desc="Role for Organization units"

@@ -1,4 +1,5 @@
 ```
+enable
 machine set hostname fw-br.au.team
 iplir stop
 inet ifconfig eth1 class trunk
@@ -36,3 +37,10 @@ iplir start
 
 inet ifconfig eth0 address 10.2.0.2 netmask 255.255.255.252
 
+inet ospf mode on
+inet ospf network add 10.2.0.0 netmask 255.255.255.252 area 0
+inet ospf network add 10.2.1.0 netmask 255.255.255.240 area 0
+inet ospf network add 10.2.2.0 netmask 255.255.255.128 area 0
+
+firewall forward add 1 src @any dst @any pass
+firewall local add 1 src @any dst @any pass

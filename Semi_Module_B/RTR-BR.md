@@ -9,12 +9,12 @@ password P@ssw0rd
 role admin
 exit
 
-inteface e0
+inteface int0
 description "to-ISP"
 ip address 84.212.78.78/27
 exit
 
-interface e1
+interface int1
 description "to-FW-BR"
 ip address 10.2.0.1/30
 exit
@@ -22,14 +22,14 @@ exit
 port te0
 service-instance ISP
 encapsulation untagged 
-connect ip interface e0 
+connect ip interface int0 
 exit
 exit
 
 port te1
 service-instance FW-BR
 encapsulation untagged 
-connect ip interface e1
+connect ip interface int1
 exit
 exit
 

@@ -8,7 +8,7 @@ echo "default via 10.1.1.1" > /etc/net/ifaces/enp6s18/ipv4route
 echo "search au.team" > /etc/net/ifaces/enp6s18/resolv.conf
 echo "nameserver 77.88.8.8" >> /etc/net/ifaces/enp6s18/resolv.conf
 systemctl restart network
-apt-get install -y haveged freeipa-server-dns
+apt-get update && apt-get install -y haveged freeipa-server-dns
 systemctl enable --now haveged
 echo "10.1.1.10 srv-hq.au.team srv-hq" > /etc/hosts
 ipa-server-install 

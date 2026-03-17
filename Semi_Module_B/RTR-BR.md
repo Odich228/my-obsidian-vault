@@ -79,3 +79,36 @@ default-information originate
 exit
 
 write memory
+
+interface tunnel.1
+description "GRE-to-FW-HQ"
+ip address 10.0.1.2/30
+ip tunnel 84.212.78.78 63.27.18.18 mode gre
+exit
+
+ip route 10.1.1.0/27 10.0.1.1
+ip route 10.1.1.32/28 10.0.1.1
+ip route 10.1.2.0/24 10.0.1.1
+
+interface int0
+ip nat outside
+exit
+
+interface int1
+ip nat inside
+exit
+ip nat pool BR 10.2.0.1-10.2.2.126
+ip nat source dynamic inside-to-outside pool BR overload interface int0
+write memory
+
+interface tunnel.3
+description "GRE-to-RTR-COD"
+ip address 10.0.3.2/30
+ip tunnel 84.212.78.78 34.95.33.33 mode gre
+exit
+
+router ospf 1
+no passive-interface tunnel.3
+network 10.0.3.0/30 area 0
+exit
+write memory

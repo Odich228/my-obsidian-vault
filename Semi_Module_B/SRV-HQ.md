@@ -1,4 +1,5 @@
 ```
+БАЗА
 hostnamectl set-hostname srv-hq.au.team; exec bash
 sed -i "s/HOSTNAME=localhost/HOSTNAME=srv-hq.au.team/g" /etc/sysconfig/network
 
@@ -9,6 +10,8 @@ echo "search au.team" > /etc/net/ifaces/enp6s18/resolv.conf
 echo "nameserver 77.88.8.8" >> /etc/net/ifaces/enp6s18/resolv.conf
 systemctl restart network
 apt-get update && apt-get install -y haveged freeipa-server-dns
+
+РАЗВОРАЧИВАЕМ ДОМЕН
 systemctl enable --now haveged
 echo "10.1.1.10 srv-hq.au.team srv-hq" > /etc/hosts
 ipa-server-install 
@@ -33,6 +36,7 @@ ipactl status  (ПРОВЕРКА)
 echo "allow-query { any; };" >> /etc/bind/ipa-options-ext.conf
 ipactl restart
 echo "P@ssw0rd" | kinit admin@AU.TEAM
+ДОБАВЛЯЕМ РОЛИ ДЛЯ АЙДЕКИ
 ipa role-add "CIFS server" --desc="Role for CIFS server"
 ipa role-add "Organization units" --desc="Role for Organization units"
 

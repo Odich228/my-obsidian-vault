@@ -706,7 +706,7 @@ EOF
 ```
 
 ```bash
-cat <<EOF > dns.tf
+cat <<'EOF' > dns.tf
 resource "freeipa_dns_zone" "reverse" {
   for_each  = toset(var.reverse_zones)
   zone_name = each.value

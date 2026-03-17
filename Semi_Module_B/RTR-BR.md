@@ -9,7 +9,7 @@ password P@ssw0rd
 role admin
 exit
 
-inteface int0
+interface int0
 description "to-ISP"
 ip address 84.212.78.78/27
 exit

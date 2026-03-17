@@ -59,7 +59,7 @@ ipa group-add-member hq --users=hq.user$i
 ipa group-add-member br --users=br.user$i
 ipa group-add-member cod --users=cod.user$i
 done
-
+apt-get install -y kea-dhcp4
 
 cat << 'EOF' > /etc/kea/kea-dhcp4.conf
 {
@@ -118,3 +118,5 @@ cat << 'EOF' > /etc/kea/kea-dhcp4.conf
 }
 }
 EOF
+
+systemctl enable --now kea-dhcp4.service

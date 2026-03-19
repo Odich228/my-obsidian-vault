@@ -136,11 +136,11 @@ sed -i "s/HOSTNAME=localhost/HOSTNAME=srv-hq.au.team/g" /etc/sysconfig/network
 ```
 
 ```bash
-echo "TYPE=eth" > /etc/net/ifaces/ens19/options
-echo "10.1.1.10/27" > /etc/net/ifaces/ens19/ipv4address
-echo "default via 10.1.1.1" > /etc/net/ifaces/ens19/ipv4route
-echo "search au.team" > /etc/net/ifaces/ens19/resolv.conf
-echo "nameserver 77.88.8.8" >> /etc/net/ifaces/ens19/resolv.conf
+echo "TYPE=eth" > /etc/net/ifaces/enp6s18/options
+echo "10.1.1.10/27" > /etc/net/ifaces/enp6s18/ipv4address
+echo "default via 10.1.1.1" > /etc/net/ifaces/enp6s18/ipv4route
+echo "search au.team" > /etc/net/ifaces/enp6s18/resolv.conf
+echo "nameserver 77.88.8.8" >> /etc/net/ifaces/enp6s18/resolv.conf
 systemctl restart network
 ```
 

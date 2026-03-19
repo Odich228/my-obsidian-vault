@@ -31,7 +31,15 @@ terraform {
 }
 EOF
 
+cat <<EOF > providers.tf provider "freeipa" {
 
+host = var.freeipa_host username = var.freeipa_username
+
+password = var.freeipa_username_password insecure = true
+
+}
+
+EOF
 cat <<EOF > terraform.tfvars
 freeipa_host              = "srv-hq.au.team"
 freeipa_username          = "admin"

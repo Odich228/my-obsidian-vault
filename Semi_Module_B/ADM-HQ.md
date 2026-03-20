@@ -36,7 +36,7 @@ provider "freeipa" {
   host = var.freeipa_host
   username = var.freeipa_username
   password = var.freeipa_username_password
-  insecure - true
+  insecure = true
 }
 EOF
 
@@ -44,6 +44,24 @@ cat <<EOF > terraform.tfvars
 freeipa_host              = "srv-hq.au.team"
 freeipa_username          = "admin"
 freeipa_username_password = "P@ssw0rd"
+EOF
+
+cat <<EOF > variable.rf
+variable "freeipa_host" {
+  type = string
+  description = "Хоты фриИпы"
+}
+
+variable "freeipa_username" {
+  type = string
+  description = "Юзы фриИпы"
+}
+
+variable "freeipa_username_password" {
+  type = string 
+  description = "Пароли фри ипы "
+  sensitive = true
+}
 EOF
 
 cat <<EOF >> variable.tf

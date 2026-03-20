@@ -31,13 +31,14 @@ terraform {
 }
 EOF
 
-cat <<EOF > providers.tf provider "freeipa" {
-
-host = var.freeipa_host username = var.freeipa_username
-
-password = var.freeipa_username_password insecure = true
-
+cat <<EOF > providers.tf
+provider "freeipa" {
+  host = var.freeipa_host
+  username = var.freeipa_username
+  password = var.freeipa_username_password
+  insecure - true
 }
+EOF
 
 EOF
 cat <<EOF > terraform.tfvars

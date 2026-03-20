@@ -12,3 +12,19 @@ apt-get update && apt-get install -y openvswitch
 systemctl enable --now openvswitch
 sed -i "s/OVS_REMOVE=yes/OVS_REMOVE=no/g" /etc/net/ifaces/default/options
 reboot
+rm -rf /etc/net/ifaces/enp6s18/options
+echo "TYPE=eth" >> /etc/net/ifaces/enp6s18/options
+cat /etc/net/ifaces/enp6s18/options
+cp -r /etc/net/ifaces/enp6s{18,19}
+cp -r /etc/net/ifaces/enp6s{18,20}
+cp -r /etc/net/ifaces/enp6s{18,21}
+cp -r /etc/net/ifaces/enp6s{18,22}
+cp -r /etc/net/ifaces/enp6s{18,23}
+systemctl restart network
+ovs-vsctl add-br sw-cod
+ovs-vsctl add-port sw-cod ens18
+ovs-vsctl add-port sw-cod ens19
+ovs-vsctl add-port sw-cod ens20
+ovs-vsctl add-port sw-cod ens21
+ovs-vsctl add-port sw-cod ens22
+ovs-vsctl add-port sw-cod ens23

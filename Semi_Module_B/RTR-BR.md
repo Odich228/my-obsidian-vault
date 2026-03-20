@@ -108,7 +108,8 @@ ip tunnel 84.212.78.78 34.95.33.33 mode gre
 exit
 
 router ospf 1
-no passive-interface tunnel.3
+passive-interface default
+no passive-interface int.1
 network 10.0.3.0/30 area 0
 exit
 write memory

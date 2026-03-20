@@ -44,3 +44,11 @@ inet ospf network add 10.2.2.0 netmask 255.255.255.128 area 0
 
 firewall forward add 1 src @any dst @any pass
 firewall local add 1 src @any dst @any pass
+
+inet dhcp server add interface eth1.20
+inet dhcp server add range 10.2.2.2 10.2.2.126 interface eth1.20
+inet dhcp server add router 10.2.2.1 interface eth1.20
+inet dhcp server add dns 10.1.1.10 interface eth1.20
+inet dhcp server add domain au.team interface eth1.20
+inet dhcp server start
+inet dhcp server mode on

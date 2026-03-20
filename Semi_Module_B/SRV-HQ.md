@@ -71,7 +71,7 @@ cat << 'EOF' > /etc/kea/kea-dhcp4.conf
 
   "interfaces-config": {
     // Kea сам найдет нужную сетевуху
-    "interfaces": [ "*" ],
+    "interfaces": [ "ens18" ],
     "dhcp-socket-type": "raw"
   },
 

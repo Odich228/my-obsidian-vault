@@ -28,3 +28,16 @@ ovs-vsctl add-port sw-cod ens20
 ovs-vsctl add-port sw-cod ens21
 ovs-vsctl add-port sw-cod ens22
 ovs-vsctl add-port sw-cod ens23
+mkdir /etc/net/ifaces/mgmt
+
+cat <<EOF >> /etc/net/ifaces/mgmt/options
+TYPE=ovsport
+BOOTPROTO=static
+BRIDGE=sw-cod
+EOF
+
+echo "172.16.1.0/23" > /etc/net/ifaces/mgmt/ipv4address
+echo "default via 172.16.1.254" > /etc/net/ifaces/mgmt/ipv4route
+echo "search au.team" > /etc/net/ifaces/mgmt/resolv.conf
+echo "nameserver 10.1.1.10" >> /etc/net/ifaces/mgmt/resolv.conf
+systemctl restart network

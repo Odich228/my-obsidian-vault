@@ -40,7 +40,6 @@ provider "freeipa" {
 }
 EOF
 
-EOF
 cat <<EOF > terraform.tfvars
 freeipa_host              = "srv-hq.au.team"
 freeipa_username          = "admin"

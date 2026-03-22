@@ -2415,12 +2415,6 @@ pip install ansible
 
 Настраиваем ansible:
 
-```bash
-cat <<EOF > ansible.cfg
-[defaults]
-host_key_checking = False
-EOF
-```
 
 ```bash
 mkdir -p inventories/production

@@ -15,6 +15,7 @@ for i in dir env headers mime rewrite;do a2enmod $i;done
 systemctl enable --now httpd2
 
 wget https://download.nextcloud.com/server/releases/nextcloud-33.0.0.zip
+unzip nextcloud-33.0.0.zip && rm -f nextcloud-33.0.0.zip
 
 cp -r nextcloud /var/www/html/ && rm -rf nextcloud
 

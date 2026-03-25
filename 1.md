@@ -1,0 +1,153 @@
+#!/bin/bash
+
+# Настройки
+Add_macAddress='no'
+keytab="/etc/dhcp/dhcpduser.keytab"
+
+usage() {
+    cat <<-EOF
+USAGE:
+$(basename "$0") add ip-address dhcid|mac-address hostname
+$(basename "$0") delete ip-address dhcid|mac-address
+EOF
+}
+
+_KERBEROS() {
+    test=$(date +%d-%m-%y' '%H:%M:%S)
+    # Проверка наличия билета Kerberos
+    klist -c "${KRB5CCNAME}" -s
+    ret="$?"
+    if [ $ret -ne 0 ]; then
+        logger "${test} [dyndns] : Getting new ticket, old one has expired"
+        kinit -F -k -t "$keytab" "${SETPRINCIPAL}"
+        ret="$?"
+        if [ $ret -ne 0 ]; then
+            logger "${test} [dyndns] : dhcpd kinit for dynamic DNS failed"
+            exit 1
+        fi
+    fi
+}
+
+rev_zone_info() {
+    local RevZone="$1"
+    local IP="$2"
+    local rzoneip="${RevZone%.in-addr.arpa}"
+    
+    # Разбиваем IP на части для определения маски обратной зоны
+    IFS='.' read -r -a words <<< "$rzoneip"
+    local numwords="${#words[@]}"
+    
+    case "$numwords" in
+        1)
+            ZoneIP=$(echo "${IP}" | awk -F '.' '{print $1}')
+            RZIP="${rzoneip}"
+            IP2add=$(echo "${IP}" | awk -F '.' '{print $4"."$3"."$2}')
+            ;;
+        2)
+            ZoneIP=$(echo "${IP}" | awk -F '.' '{print $1"."$2}')
+            RZIP=$(echo "${rzoneip}" | awk -F '.' '{print $2"."$1}')
+            IP2add=$(echo "${IP}" | awk -F '.' '{print $4"."$3}')
+            ;;
+        3)
+            ZoneIP=$(echo "${IP}" | awk -F '.' '{print $1"."$2"."$3}')
+            RZIP=$(echo "${rzoneip}" | awk -F '.' '{print $3"."$2"."$1}')
+            IP2add=$(echo "${IP}" | awk -F '.' '{print $4}')
+            ;;
+        *)
+            exit 1
+            ;;
+    esac
+}
+
+# Определение путей к бинарникам
+BINDIR=$(samba -b | grep 'BINDIR' | grep -v 'SBINDIR' | awk '{print $NF}')
+WBINFO="${BINDIR}/wbinfo"
+SAMBATOOL=$(command -v samba-tool)
+
+if [[ -z "$SAMBATOOL" ]]; then
+    logger "Cannot find samba-tool. Check PATH."
+    exit 1
+fi
+
+# Определение версии Samba для правильного флага Kerberos
+MINVER=$($SAMBATOOL -V | grep -o '[0-9]*' | tr '\n' ' ' | awk '{print $2}')
+if [ "$MINVER" -gt "14" ]; then
+    KTYPE="--use-kerberos=required"
+else
+    KTYPE="-k yes"
+fi
+
+Server=$(hostname -s)
+domain=$(hostname -d)
+
+if [ -z "${domain}" ]; then
+    logger "Cannot obtain domain name. Exiting."
+    exit 1
+fi
+
+REALM="${domain^^}"
+export KRB5CCNAME="/tmp/dhcp-dyndns.cc"
+SETPRINCIPAL="dhcpduser@${REALM}"
+
+# Проверка наличия пользователя в AD
+TESTUSER=$($WBINFO -u | grep 'dhcpduser')
+if [ -z "${TESTUSER}" ]; then
+    logger "No AD dhcp user exists. Create it and add to DnsAdmins."
+    exit 1
+fi
+
+action="$1"
+ip="$2"
+DHCID="$3"
+name="${4%%.*}"
+
+if [ -z "${ip}" ]; then
+    usage
+    exit 1
+fi
+
+case "${action}" in
+    add)
+        _KERBEROS
+        count=0
+        # Проверяем существующие A-записи
+        mapfile -t A_REC < <($SAMBATOOL dns query "${Server}" "${domain}" "${name}" A $KTYPE 2>/dev/null | grep 'A:' | awk '{print $2}')
+        
+        if [ "${#A_REC[@]}" -eq 0 ]; then
+            result1=0
+            $SAMBATOOL dns add "${Server}" "${domain}" "${name}" A "${ip}" $KTYPE >/dev/null 2>&1
+            result2="$?"
+        else
+            for i in "${A_REC[@]}"; do
+                if [ "$i" = "${ip}" ]; then
+                    result1=0
+                    result2=0
+                    count=$((count+1))
+                else
+                    $SAMBATOOL dns delete "${Server}" "${domain}" "${name}" A "${i}" $KTYPE >/dev/null 2>&1
+                    result1="$?"
+                    $SAMBATOOL dns add "${Server}" "${domain}" "${name}" A "${ip}" $KTYPE >/dev/null 2>&1
+                    result2="$?"
+                fi
+            done
+        fi
+
+        # Обратные зоны
+        ReverseZones=$($SAMBATOOL dns zonelist "${Server}" $KTYPE --reverse | grep 'pszZoneName' | awk '{print $NF}')
+        for revzone in $ReverseZones; do
+            rev_zone_info "$revzone" "${ip}"
+            if [[ ${ip} == ${ZoneIP}* ]]; then
+                $SAMBATOOL dns add "${Server}" "${revzone}" "${IP2add}" PTR "${name}.${domain}" $KTYPE >/dev/null 2>&1
+                result4="$?"
+                break
+            fi
+        done
+        ;;
+    delete)
+        _KERBEROS
+        $SAMBATOOL dns delete "${Server}" "${domain}" "${name}" A "${ip}" $KTYPE >/dev/null 2>&1
+        result1="$?"
+        ;;
+esac
+
+exit 0

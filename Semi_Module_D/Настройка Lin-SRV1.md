@@ -39,9 +39,9 @@ mkdir -p /opt/samba/profiles
 chown root:"Domain Admins" /opt/samba/profiles
 chmod 0770 /opt/samba/profiles
 
-mkdir -p /srv/samba/share
+mkdir -p /opt/samba/share
 chown nobody:nobody /srv/samba/share
-chmod 0775 /srv/samba/share
+chmod 0775 /opt/samba/share
 
 mkdir/opt/samba/UserDocs
 chown -R root:"SEMIFINAL.IRPO\\Domain Users" /opt/samba/UserDocs

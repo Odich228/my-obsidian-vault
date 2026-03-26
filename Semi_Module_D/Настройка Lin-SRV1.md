@@ -47,3 +47,7 @@ mkdir -p /opt/samba/UserDocs
 chown -R root:"SEMIFINAL.IRPO\\Domain Users" /opt/samba/UserDocs
 chmod -R 2775 /opt/samba/UserDocs
 ```
+#### Проверка
+```
+ls -ldn /opt/samba/profiles /opt/samba/share /opt/UserDocs
+```

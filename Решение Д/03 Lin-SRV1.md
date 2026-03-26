@@ -43,7 +43,7 @@ chown -R root:"SEMIFINAL.IRPO\\Domain Users" /opt/samba/UserDocs
 chmod -R 2775 /opt/samba/UserDocs
 ```
 проверка
-ls -ldn /opt/samba/profiles /srv/samba/share /opt/UserDocs
+ls -ldn /opt/samba/profiles /opt/samba/share /opt/UserDocs
 
 ##### Конфигурируем smb.conf
 %% начала комментируем ; browseable = No %%

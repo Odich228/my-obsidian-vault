@@ -49,5 +49,5 @@ chmod -R 2775 /opt/samba/UserDocs
 ```
 #### Проверка
 ```
-ls -ldn /opt/samba/profiles /opt/samba/share /opt/UserDocs
+ls -ldn /opt/samba/profiles /opt/samba/share /opt/samba/UserDocs
 ```

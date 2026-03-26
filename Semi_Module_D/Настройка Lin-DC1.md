@@ -1,4 +1,4 @@
-##### Базовая настройка  
+#### Базовая настройка  
 	**имени**
 ```
 hostnamectl hostname Lin-DC1.semifinal.irpo
@@ -13,14 +13,14 @@ echo -e "nameserver 192.168.1.2\nsearch semifinal.irpo" > /etc/net/ifaces/ens18/
 
 systemctl restart network
 ```
-##### Настройка NTP-сервера
+#### Настройка NTP-сервера
 ```
 control chrony server
  systemctl enable --now chronyd
  systemctl status chronyd.service
  chronyc sources
 ```
-##### Установка бинда и самбы
+#### Установка бинда и самбы
 ```
 apt-get update && apt-get install bind-utils bind task-samba-dc -y
 control bind-chroot disabled
@@ -28,7 +28,7 @@ echo 'KRB5RCACHETYPE="none"' >> /etc/sysconfig/bind
 echo 'include "/var/lib/samba/bind-dns/named.conf";' >> /etc/bind/named.conf
 
 ```
-###### Настройка бинда
+#### Настройка бинда
 ```
 cat << "EOF" > /etc/bind/options.conf
 
@@ -58,22 +58,23 @@ logging {
 EOF
 ```
 
-###### ОЧЕНЬ НАДО!!!
+### ОЧЕНЬ НАДО!!!
 ```
 rm -f /etc/samba/smb.conf ; rm -rf /var/lib/samba ; rm -rf /var/cache/samba ; mkdir -p /var/lib/samba/sysvol
 ```
 
-##### TGT билет
+#### заменяешь [[Ultimate Kerberos]]
+#### TGT билет
 ```
 kinit admin@SEMIFINAL.IRPO
 klist
 ```
-###### Вводим в домен
+#### Вводим в домен
 ```
 samba-tool domain join semifinal.irpo DC -U admin --realm=semifinal.irpo --dns-backend=BIND9_DLZ
 ```
 
-###### Включаем службу
+#### Включаем службу
 ```
 systemctl enable --now samba
 systemctl enable --now bind
@@ -83,26 +84,31 @@ systemctl status samba bind
 service samba status; service bind status 
 
 ```
-##### Проверка
+#### Проверка
 ```
 host semifinal.irpo
 host -t SRV _ldap._tcp.semifinal.irpo
 ```
 смотри что бы было по две записи 
 
-###### Проверка работы службы каталогов LDAP
+#### Проверка работы службы каталогов LDAP
 ```
 samba-tool drs showrepl
 ```
-###### Меняем DNS на себя
+#### Меняем DNS на себя
 ```
 echo -e "nameserver 127.0.0.1\nsearch semifinal.irpo" > /etc/net/ifaces/ens18/resolv.conf 
 systemctl restart network
 ```
 
-##### Перенос политик 
+#### Перенос политик 
 ```
-на Win-DC открывает два проводника
+на Win-DC открываешь два проводника
 на левом: \\Lin-DC1\sysvol\semifinal.irpo (там будет папка scripts, снеси её)
 на правом:  C:/Windows/SYSVOL/sysvol/semifinal.irpo
-Увидишь две папки Policies 
+Увидишь две папки Policies и scripts, переносишь на Lin-DC1
+
+НА LIN-DC1
+
+samba-tool ntacl sysvolreset
+```

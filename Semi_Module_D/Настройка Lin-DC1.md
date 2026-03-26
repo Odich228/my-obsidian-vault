@@ -105,7 +105,7 @@ systemctl restart network
 ```
 на Win-DC открываешь два проводника
 	на левом: \\Lin-DC1\sysvol\semifinal.irpo (там будет папка scripts, снеси её)
-	на правом:  C:/Windows/SYSVOL/sysvol/semifinal.irpo
+	на правом:  C:\Windows\SYSVOL\sysvol\semifinal.irpo
 	Увидишь две папки Policies и scripts, переносишь на Lin-DC1
 
 НА LIN-DC1

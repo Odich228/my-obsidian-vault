@@ -51,3 +51,33 @@ chmod -R 2775 /opt/samba/UserDocs
 ```
 ls -ldn /opt/samba/profiles /opt/samba/share /opt/samba/UserDocs
 ```
+
+##### Конфигурируем smb.conf
+%% начала комментируем ; browseable = No %%
+###### /etc/samba/smb.conf
+```
+[profiles]
+comment = Users profiles
+path = /opt/samba/profiles/
+;browseable = No
+read only = No
+vfs objects = acl_xattr
+
+[share]
+path = /srv/samba/share
+guest ok = yes
+public = yes
+writable = yes
+available = yes
+force user = nobody
+
+[UserDocs]
+comment = Docs domain users
+path = /opt/UserDocs
+writable = yes
+read list = @Domain Users
+write list = @Domain Users
+force group = Domain Users
+force create mode = 666
+force directory mode = 775
+```

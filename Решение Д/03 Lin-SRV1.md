@@ -52,7 +52,7 @@ ls -ldn /opt/samba/profiles /opt/samba/share /opt/UserDocs
 [profiles]
 comment = Users profiles
 path = /opt/samba/profiles/
-browseable = No
+;browseable = No
 read only = No
 vfs objects = acl_xattr
 

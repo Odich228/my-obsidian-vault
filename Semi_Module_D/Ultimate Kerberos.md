@@ -12,3 +12,4 @@ SEMIFINAL.IRPO = {
 [domain_realm]
         LIN-DC1 = SEMIFINAL.IRPO
 EOF
+```

@@ -40,7 +40,7 @@ chown root:"Domain Admins" /opt/samba/profiles
 chmod 0770 /opt/samba/profiles
 
 mkdir -p /opt/samba/share
-chown nobody:nobody /srv/samba/share
+chown nobody:nobody /opt/samba/share
 chmod 0775 /opt/samba/share
 
 mkdir/opt/samba/UserDocs

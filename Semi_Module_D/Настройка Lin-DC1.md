@@ -104,11 +104,10 @@ systemctl restart network
 #### Перенос политик 
 ```
 на Win-DC открываешь два проводника
-на левом: \\Lin-DC1\sysvol\semifinal.irpo (там будет папка scripts, снеси её)
-на правом:  C:/Windows/SYSVOL/sysvol/semifinal.irpo
-Увидишь две папки Policies и scripts, переносишь на Lin-DC1
+	на левом: \\Lin-DC1\sysvol\semifinal.irpo (там будет папка scripts, снеси её)
+	на правом:  C:/Windows/SYSVOL/sysvol/semifinal.irpo
+	Увидишь две папки Policies и scripts, переносишь на Lin-DC1
 
 НА LIN-DC1
-
-samba-tool ntacl sysvolreset
+	samba-tool ntacl sysvolreset
 ```

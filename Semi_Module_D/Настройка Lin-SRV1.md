@@ -81,3 +81,8 @@ force group = Domain Users
 force create mode = 666
 force directory mode = 775
 ```
+#### Включаем службы
+```
+systemctl enable --now smb avahi-daemon
+systemctl status smb.service
+```

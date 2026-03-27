@@ -91,4 +91,8 @@ systemctl status smb.service
 ```
 На win-dc 
 	Заходим на Lin-SRV1 (\\Lin-SRV1)
-	на profiles заходим в свойства, удаляем everyone, добавляем Domain Users, потом Edit => security => edit 
+	на profiles заходим в свойства, удаляем everyone, добавляем Domain Users, потом Edit => security => edit и тд
+	
+На Lin-SRV1 
+	в /etc/samba/smb.conf
+		раскоментируем broseable

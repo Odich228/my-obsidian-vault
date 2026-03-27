@@ -1,4 +1,4 @@
-##### Базовая настройка  
+#### Базовая настройка  
 	имени
 ```
 hostnamectl hostname Lin-DC2.semifinal.irpo

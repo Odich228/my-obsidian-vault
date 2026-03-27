@@ -86,3 +86,9 @@ force directory mode = 775
 systemctl enable --now smb avahi-daemon
 systemctl status smb.service
 ```
+
+#### Изменение ACL 
+```
+На win-dc 
+	Заходим на Lin-SRV1 (\\Lin-SRV1)
+	на profiles заходим в свойства, удаляем everyone, добавляем Domain Users, потом Edit => security => edit 

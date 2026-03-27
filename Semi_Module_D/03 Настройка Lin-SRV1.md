@@ -64,7 +64,7 @@ read only = No
 vfs objects = acl_xattr
 
 [share]
-path = /srv/samba/share
+path = /opt/samba/share
 guest ok = yes
 public = yes
 writable = yes
@@ -73,7 +73,7 @@ force user = nobody
 
 [UserDocs]
 comment = Docs domain users
-path = /opt/UserDocs
+path = /opt/samba/UserDocs
 writable = yes
 read list = @Domain Users
 write list = @Domain Users

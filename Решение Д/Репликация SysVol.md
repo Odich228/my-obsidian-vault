@@ -66,7 +66,7 @@ root@Lin-DC2.semifinal.irpo:/var/lib/samba && /usr/bin/unison
 ```
 9. Создать задание
 ```
-EDITOR=vim crontab -e
+EDITOR=nano crontab -e
 
 */5 * * * * /usr/bin/unison -silent
 ```

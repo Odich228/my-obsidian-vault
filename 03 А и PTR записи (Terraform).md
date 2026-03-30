@@ -48,7 +48,7 @@ freeipa_username          = "admin"
 freeipa_username_password = "P@ssw0rd"
 EOF
 
-cat <<EOF > variable.rf
+cat <<EOF > variable.tf
 variable "freeipa_host" {
   type = string
   description = "Хоты фриИпы"

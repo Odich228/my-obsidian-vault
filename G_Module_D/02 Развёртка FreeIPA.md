@@ -21,3 +21,21 @@ ipa-server-install -U --hostname=$(hostname) -r AU.TEAM -n au.team -p P@ssw0rd -
 host srv-hq.au.team
 host 10.1.1.10
 host ya.ru
+
+echo "P@ssw0rd" | kinit admin
+
+ipa group-add hq
+ipa group-add br
+ipa group-add cod
+
+for i in {1..5}; do
+echo "P@ssw0rd" | ipa user-add hq.user$i --first=hq --last=user$i --password
+echo "P@ssw0rd" | ipa user-add br.user$i --first=br --last=user$i --password 
+echo "P@ssw0rd" | ipa user-add cod.user$i --first=cod --last=user$i --password 
+done
+
+for i in {1..5}; do 
+ipa group-add-member hq --users=hq.user$i 
+ipa group-add-member br --users=br.user$i 
+ipa group-add-member cod --users=cod.user$i 
+done

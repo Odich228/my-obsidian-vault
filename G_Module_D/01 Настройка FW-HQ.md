@@ -12,9 +12,17 @@
 добавь объекты (подсети)
 
 На АДМ 
-меняем адрес ставим влан 
+меняем адрес ставим влан
+меняем адрес на 10.1.1.46 
 
 на веб-морде
 на mgmt удаляем адрес
 скачиваем сертификат и закидываем:
 mv /home/user/Загрузки/root_ca.crt /etc/pki/ca-trust/source/anchors/ && update-ca-trust
+reboot???
+ЕСЛИ CHROMIUM БЛОКНУЛСЯ:
+rm -rf .config/chromium/SingletonLock
+
+далее делаем isp
+	роль wan
+	адрес 63.28.18.18

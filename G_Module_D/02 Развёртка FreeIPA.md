@@ -21,6 +21,8 @@ ipa-server-install -U --hostname=$(hostname) -r AU.TEAM -n au.team -p P@ssw0rd -
 host srv-hq.au.team
 host 10.1.1.10
 host ya.ru
+echo "allow-query { any; };" >> /etc/bind/ipa-options-ext.conf
+ipactl restart
 
 echo "P@ssw0rd" | kinit admin
 
@@ -39,3 +41,5 @@ ipa group-add-member hq --users=hq.user$i
 ipa group-add-member br --users=br.user$i 
 ipa group-add-member cod --users=cod.user$i 
 done
+
+

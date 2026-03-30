@@ -16,3 +16,5 @@
 
 на веб-морде
 на mgmt удаляем адрес
+скачиваем сертификат и закидываем:
+mv /home/user/Загрузки/root_ca.crt /etc/pki/ca-trust/source/anchors/ && update-ca-trust

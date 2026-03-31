@@ -10,7 +10,6 @@ systemctl restart network
 
 apt-get update && apt-get install -y apache2 apache2-mod_ssl apache2-mod_php8.4 php8.4 php8.4-{pgsql,pdo_pgsql,curl,dom,exif,fileinfo,gd2,gmp,imagick,intl,libs,mbstring,memcached,opcache,openssl,pcntl,pdo,xmlreader,zip,ldap}
 
-for i in dir env headers mime rewrite;do a2enmod $i;done
 
 systemctl enable --now httpd2
 

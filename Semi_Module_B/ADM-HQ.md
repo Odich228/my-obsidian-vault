@@ -222,3 +222,28 @@ python3 -m venv venv/ansible
 source venv/ansible/bin/activate
 pip install --upgrade pip && pip install ansible
 mkdir -p inventories/production
+
+cat <<EOF > inventories/production/hosts
+all:
+  children:
+    proxy:
+      hosts:
+        ha1-cod:
+        ha2-cod:
+    server:
+      hosts:
+        srv1-cod:
+        srv2-cod:
+        srv3-cod:
+EOF
+
+mkdir inventories/production/group_vars
+
+cat <<EOF > inventories/production/group_vars/all.yml
+---
+ansible_python_interpreter: /usr/bin/python3
+ansible_ssh_user: root
+ansible_ssh_private_key_file: ~/.ssh/id_rsa
+EOF
+
+ansible -i inventories/production/hosts -m ping all

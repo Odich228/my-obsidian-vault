@@ -202,3 +202,21 @@ resource "freeipa_dns_record" "ptr" {
 EOF
 
 terraform apply -auto-approve
+
+
+
+
+
+
+ANSIBLE
+apt-get update && apt-get install -y python3-module-pip
+ssh-keygen -t rsa
+
+for i in ha1 ha2 srv1 srv2 srv3;
+do ssh-copy-id root@$i-cod
+done
+
+mkdir /home/user/ansible 
+cd /home/user/ansible
+python3 -m venv venv/ansible
+source venv/ansible/bin/activate

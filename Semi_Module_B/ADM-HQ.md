@@ -220,3 +220,5 @@ mkdir /home/user/ansible
 cd /home/user/ansible
 python3 -m venv venv/ansible
 source venv/ansible/bin/activate
+pip install --upgrade pip && pip install ansible
+mkdir -p inventories/production

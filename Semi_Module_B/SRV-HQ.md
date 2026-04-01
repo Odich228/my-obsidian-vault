@@ -13,25 +13,7 @@ apt-get update && apt-get install -y haveged freeipa-server-dns
 
 РАЗВОРАЧИВАЕМ ДОМЕН
 systemctl enable --now haveged
-echo "10.1.1.10 srv-hq.au.team srv-hq" > /etc/hosts
-ipa-server-install 
-	1.-
-	2.-
-	3.-
-	4.P@ssw0rd
-	5.yes
-	6.-
-	7.-
-	8.77.88.8.8
-	9.-
-	10.yes
-	11.-
-	12.-
-	13.-
-	14.yes
-	15.-
-	16.-
-	17.yes
+ipa-server-install -U --hostname=$(hostname) -r AU.TEAM -n au.team -p P@ssw0rd -a P@ssw0rd --setup-dns --forwarder 77.88.8.8 --auto-reverse
 ipactl status  (ПРОВЕРКА)
 echo "allow-query { any; };" >> /etc/bind/ipa-options-ext.conf
 ipactl restart

@@ -10,6 +10,7 @@ echo "search au.team" > /etc/net/ifaces/enp6s18/resolv.conf
 echo "nameserver 77.88.8.8" >> /etc/net/ifaces/enp6s18/resolv.conf
 systemctl restart network
 apt-get update && apt-get install -y haveged freeipa-server-dns
+echo "10.1.1.10 srv-hq.au.team srv-hq" > /etc/hosts
 
 РАЗВОРАЧИВАЕМ ДОМЕН
 systemctl enable --now haveged

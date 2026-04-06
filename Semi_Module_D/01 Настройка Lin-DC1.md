@@ -64,7 +64,30 @@ rm -f /etc/samba/smb.conf ; rm -rf /var/lib/samba ; rm -rf /var/cache/samba ; mk
 ```
 
 #### заменяешь [[Ultimate Kerberos]]
+
+/etc/samba/smb.conf
+```
+ cat << "EOF" > /etc/samba/smb.conf
+[global]
+        dns forwarder = 8.8.8.8
+        netbios name = LIN-DC1
+        realm = SEMIFINAL.IRPO
+        server role = active directory domain controller
+        server services = -dns
+        workgroup = SEMIFINAL
+ ;       dsdb:schema update allowed = true
+ ;       ad dc functional level = 2016
+[sysvol]
+        path = /var/lib/samba/sysvol
+        read only = No
+
+[netlogon]
+        path = /var/lib/samba/sysvol/semifinal.irpo/scripts
+        read only = No
+EOF
+```
 #### TGT билет
+
 ```
 kinit admin@SEMIFINAL.IRPO
 klist

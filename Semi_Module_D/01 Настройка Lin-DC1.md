@@ -6,10 +6,10 @@ domainname semifinal.irpo
 ```
 	**и сети**
 ```
-echo "TYPE=eth" > /etc/net/ifaces/ens18/options 
-echo "192.168.1.3/24" > /etc/net/ifaces/ens18/ipv4address
-echo "default via 192.168.1.1" > /etc/net/ifaces/ens18/ipv4route
-echo -e "nameserver 192.168.1.2\nsearch semifinal.irpo" > /etc/net/ifaces/ens18/resolv.conf
+echo "TYPE=eth" > /etc/net/ifaces/enp6s18/options 
+echo "192.168.1.3/24" > /etc/net/ifaces/enp6s18/ipv4address
+echo "default via 192.168.1.1" > /etc/net/ifaces/enp6s18/ipv4route
+echo -e "nameserver 192.168.1.2\nsearch semifinal.irpo" > /etc/net/ifaces/enp6s18/resolv.conf
 
 systemctl restart network
 ```

@@ -30,7 +30,7 @@ mkdir /root/.unison
 ```
 7. Создать файл конфигурации Unison
 ```
-cat << EOF > /root/.unison/sync_Lin-DC2.prf
+cat << EOF > /root/.unison/default.prf
 # Список каталогов, которые будут синхронизированы
 root = /var/lib/samba
 # После имени хоста используются два символа /

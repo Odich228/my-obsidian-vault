@@ -1,4 +1,4 @@
-Понижаем домен AD:
+	Понижаем домен AD:
 ```
 set-ADForestMode -Identity samba.alt -ForestMode Windows2012R2Forest
 set-ADDomainMode -Identity samba.alt -DomainMode windows2012R2Domain

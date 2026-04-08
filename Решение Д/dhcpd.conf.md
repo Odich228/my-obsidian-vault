@@ -3,7 +3,7 @@ cat << "EOF" > /etc/dhcp/dhcpd.conf
 authoritative;
 ddns-update-style none;
 
-subnet 192.168.1.0 netmask 255.255.255.0 {
+￼subnet 192.168.1.0 netmask 255.255.255.0 {
  option subnet-mask 255.255.255.0;
  option broadcast-address 192.168.1.255;
  option time-offset 0;
@@ -12,7 +12,7 @@ subnet 192.168.1.0 netmask 255.255.255.0 {
  option ntp-servers 192.168.1.3;
  option domain-name "semifinal.irpo";
  default-lease-time 3600;
- pool {
+ ￼pool {
         max-lease-time 1800;
         range 192.168.1.10 192.168.1.20;
  }

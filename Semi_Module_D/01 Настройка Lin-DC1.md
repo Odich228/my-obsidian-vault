@@ -133,7 +133,7 @@ samba-tool drs showrepl
 ```
 #### Меняем DNS на себя
 ```
-echo -e "nameserver 127.0.0.1\nsearch semifinal.irpo" > /etc/net/ifaces/enp6s18/resolv.conf 
+echo -e "nameserver 127.0.0.1\nsearch semifinal.irpo" > /etc/net/ifaces/ens18/resolv.conf 
 systemctl restart network
 ```
 

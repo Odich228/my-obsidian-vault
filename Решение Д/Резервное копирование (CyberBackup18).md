@@ -1,6 +1,6 @@
 На хостах LIN-SRV1 и ADM
 ```
-apt-get install kernel-source-6.12 kernel-headers-modules-latest gcc make kmod-sign -y
+apt-get install kernel-source-6.12 kernel-headers-modules-6.12 gcc make kmod-sign -y
 update-kernel
 reboot
 uname -r

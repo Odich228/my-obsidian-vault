@@ -64,12 +64,18 @@ variable "freeipa_username_password" {
 }
 EOF
 
+terraform init
+
+
+tree -a
+
 cat <<EOF >> variable.tf
 
 variable "reverse_zones" {
   description = "List of reverse viewing zones"
   type        = list(string)
   default = [
+	"1.1.10.in-addr.arpa.",
     "2.1.10.in-addr.arpa.",
     "0.2.10.in-addr.arpa.",
     "1.2.10.in-addr.arpa.",
@@ -176,7 +182,9 @@ variable "dns_records" {
 }
 EOF
 
-cat <<EOF > dns.tf
+nano dns.tf
+
+
 resource "freeipa_dns_zone" "reverse" {
   for_each  = toset(var.reverse_zones)
   zone_name = each.value
@@ -199,7 +207,7 @@ resource "freeipa_dns_record" "ptr" {
 
   depends_on = [freeipa_dns_zone.reverse]
 }
-EOF
+
 
 terraform apply -auto-approve
 
@@ -247,3 +255,89 @@ ansible_ssh_private_key_file: ~/.ssh/id_rsa
 EOF
 
 ansible -i inventories/production/hosts -m ping all
+
+cat << EOF > playbook1_keepalived.yml
+- name: Установка кипаливед на ha1-cod и ha2-cod
+  hosts: proxy
+  become: true
+  
+  tasks:
+    - name: установка кипа
+      community.general.apt_rpm:
+        name: "keepalived"
+        state: present
+        update_cache: true
+  
+  
+- hosts: ha1-cod
+  become: true 
+  
+  tasks:
+    - name: Копирование конфига 
+      ansible.builtin.template:
+        src: templates/keepalived-master.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+	    owner: root
+	    group: root
+	    mode: '0664'
+	    
+- hosts: ha2-cod
+  become: true
+  
+  tasks: 
+    - name: Коприdвание конфига 
+      ansible.builtin.template:
+      src: templates/keepalived-backup.conf.j2
+      dest: /etc/keepalived/keepalived.conf 
+	  owner: root
+	  group: root
+	  mode: '0664'
+	  
+- hosts: proxy
+  become: true
+  
+  tasks: 
+    - name: Старт кипа 
+      ansible.builtin.systemd:
+        name: keepalived
+        state: started
+        enabled: true
+
+EOF
+
+mkdir templates
+
+cat <<EOF > templates/keepalived-master.conf.j2
+global_defs {
+	enable_script_security
+	max_auto_priority
+}
+
+vrrp_script chk_haproxy {
+	script "killall -o haproxy"
+	interval 2
+	weight 2
+}
+
+vrrp_instance VI_1 {
+	interface {{ keepalived_interface_name }}
+	state MASTER
+	
+	virtual_router_id 51
+	priority 101
+	
+	virtual_ipaddress {
+		{{ keepalived_virtual_ipaddress }}
+	}
+	
+	track_script {
+		chk_haproxy
+	}
+}
+EOF
+
+
+cat <<EOF > templates/keepalived-backup.conf.j2
+global_defs {
+	enba
+}

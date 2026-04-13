@@ -368,7 +368,7 @@ EOF
 СМОТРИ КАК НАЗЫВАЕТСЯ ИНТЕРФЕЙС
 
 cat <<EOF > inventories/production/group_vars/proxy.yml
-keepalived_interface_name: "ens18"
+keepalived_interface_name: "ens19"
 keepalived_virtual_ipaddress: "172.16.1.253/23"
 EOF
 

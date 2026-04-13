@@ -217,7 +217,9 @@ terraform apply -auto-approve
 
 
 ANSIBLE
+на руте!!!
 apt-get update && apt-get install -y python3-module-pip
+юзер!!!
 ssh-keygen -t rsa
 
 for i in ha1 ha2 srv1 srv2 srv3;

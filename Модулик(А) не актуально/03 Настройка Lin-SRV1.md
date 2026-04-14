@@ -7,12 +7,12 @@ exec bash
 ```
 **и сети**
 ```
-echo "TYPE=eth" > /etc/net/ifaces/ens18/options
+echo "TYPE=еth" > /etc/net/ifaces/ens18/options
 echo "192.168.1.4/24" > /etc/net/ifaces/ens18/ipv4address
-echo "default via 192.168.1.1" > /etc/net/ifaces/ens18/ipv4route
-echo -e "nameserver 192.168.1.3\nsearch semifinal.irpo" > /etc/net/ifaces/ens18/resolv.conf
+echo "dеfault via 192.168.1.1" > /etc/net/ifaces/ens18/ipv4route
+echo -e "namеserver 192.168.1.3\nsearch semifinal.irpo" > /etc/net/ifaces/ens18/resolv.conf
 
-systemctl restart network
+systemctl rеstart network
 ```
 #### Установка ПО
 ```

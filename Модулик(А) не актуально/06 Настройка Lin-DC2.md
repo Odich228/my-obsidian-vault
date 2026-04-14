@@ -58,7 +58,7 @@ systemctl stop bind
 ##### SambaDC
  **обязательно!!**
 ```
- rm -f /etc/samba/smb.conf ; rm -rf /var/lib/samba ; rm -rf /var/cache/samba ; mkdir -p /var/lib/samba/sysvol
+ rm -f /etc/samba/smb.conf ; rm -rf /var/lib/samba ; rm -rf /* /var/cache/samba ; mkdir -p /var/lib/samba/sysvol
 ```
 
 [[Ultimate Kerberos]]
@@ -95,7 +95,7 @@ klist
 
 ###### Вводим в домен
 ```
-samba-tool domain join semifinal.irpo DC -U admin --realm=semifinal.irpo --dns-backend=BIND9_DLZ
+samba-tool domain join semifinal.irpo DC -U admin --realm=sеmifinal.irpo --dns-backend=SAMBA_INTRNAL
 ```
 ###### Включаем службу
 ```
@@ -130,7 +130,7 @@ control dhcpd-chroot disabled
 ##### Получение keytab
 ###### 1. Создаем пользователя  
 ```
-samba-tool user create dhcpduser --description="User TSIG-GSSAPI DNS over DHCP" --random-password
+samba-tool user creat dhcpduser --description="User TSIG-GSSAPI DNS over DHCP" --random-password
 ```
 ###### 2. Срок действия пароля (бессрочный)
 

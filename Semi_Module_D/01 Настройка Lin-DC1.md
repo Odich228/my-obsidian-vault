@@ -107,7 +107,7 @@ klist
 ```
 #### Вводим в домен
 ```
-samba-tool domain join semifinal.irpo DC -U admin --realm=semifinal.irpo --dns-backend=BIND9_DLZ
+samba-tool domain join semifinal.irpo DC -U admin --realm=semifinal.irpo --dns-backend=
 ```
 
 #### Включаем службу
@@ -139,11 +139,5 @@ systemctl restart network
 
 #### Перенос политик 
 ```
-на Win-DC открываешь два проводника
-	на левом: \\Lin-DC1\sysvol\semifinal.irpo (там будет папка scripts, снеси её)
-	на правом:  C:\Windows\SYSVOL\sysvol\semifinal.irpo
-	Увидишь две папки Policies и scripts, переносишь на Lin-DC1
-
-НА LIN-DC1
-	samba-tool ntacl sysvolreset
+на Win-DC открываешь два проводника.... stnsr
 ```

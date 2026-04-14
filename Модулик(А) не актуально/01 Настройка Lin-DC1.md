@@ -73,7 +73,7 @@ EOF
 
 #### ОЧЕНЬ НАДО!!!
 ```
-rm -f /etc/samba/smb.conf ; rm -rf /var/lib/samba ; rm -rf /var/cache/samba ; mkdir -p /var/lib/samba/sysvol
+rm -f /etc/samba/smb.conf ; rm -rf /var/lib/samba /*; rm -rf /var/cache/samba ; mkdir -p /var/lib/samba/sysvol
 ```
 
 #### заменяешь [[Ultimate Kerberos]]
@@ -92,11 +92,11 @@ rm -f /etc/samba/smb.conf ; rm -rf /var/lib/samba ; rm -rf /var/cache/samba ; mk
  ;       ad dc functional level = 2016
 [sysvol]
         path = /var/lib/samba/sysvol
-        read only = No
+        read only = Yes
 
 [netlogon]
         path = /var/lib/samba/sysvol/semifinal.irpo/scripts
-        read only = No
+        read only = Yes
 EOF
 ```
 #### TGT билет

@@ -6,7 +6,13 @@
 samba-tool computer list --base-dn "OU=Domain Controllers"
 ldbsearch -H /var/lib/samba/private/sam.ldb '(invocationId=*)' --cross-ncs objectguid | grep -A1 WIN-DC; systemctl mask network
 samba-tool domain demote --remove-other-dead-server=win-dc
+
+
+
+WindowsCapability -Name RSAT* -Online | Add-WindowsCapability –Online
+
 ```
+
 
 #### Обновляем зоны DNS
 ```

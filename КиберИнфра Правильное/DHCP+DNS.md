@@ -54,7 +54,7 @@ chmod 755 /usr/local/bin/dhcp-dyndns.sh
 9. Отключаем chroot-зацию
 control dhcpd-chroot disabled
 Создаем конфигурационный файл /etc/dhcp/dhcpd.conf
-[[dhcpd.conf]]
+[[конфиг вима]]
 10. Запускаем DHCP
 ```
 systemctl enable --now dhcpd

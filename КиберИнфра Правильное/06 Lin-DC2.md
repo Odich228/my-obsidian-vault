@@ -123,7 +123,7 @@ apt-get install dhcp-server -y
 ```
 control dhcpd-chroot disabled
 ```
-Конфиг [[dhcpd.conf]]
+Конфиг [[конфиг вима]]
 Берем [скрипт](https://docs.altlinux.org/ru-RU/alt-domain/11.1/html/alt-domain/images/dhcp-dyndns.sh) или [[dhcp-dyndns.sh]]
 ```
 wget -P  /usr/local/bin/ https://docs.altlinux.org/ru-RU/alt-domain/11.1/html/alt-domain/images/dhcp-dyndns.sh
